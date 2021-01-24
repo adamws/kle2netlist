@@ -1,6 +1,6 @@
 # type: ignore[attr-defined]
 
-from typing import Optional
+from typing import List, Optional
 
 import json
 import random
@@ -42,13 +42,8 @@ def version_callback(value: bool):
 def main(
     layout: str = typer.Option(..., help="Path to kle layout file"),
     output: str = typer.Option(..., help="Path to output"),
-    color: Optional[Color] = typer.Option(
-        None,
-        "-c",
-        "--color",
-        "--colour",
-        case_sensitive=False,
-        help="Color for name. If not specified then choice will be random.",
+    lib_paths: Optional[List[str]] = typer.Option(
+        None, "-l", "--lib-path", help="Path to symbol library"
     ),
     version: bool = typer.Option(
         None,
@@ -59,13 +54,8 @@ def main(
         help="Prints the version of the kle2netlist package.",
     ),
 ):
-    """Prints a greeting for a giving name."""
-    if color is None:
-        # If no color specified use random value from `Color` class
-        color = random.choice(list(Color.__members__.values()))
-
-    console.print(f"[bold {color}]{layout}[/]")
+    """Generates KiCad netlist for a given keyboard layout json file."""
 
     with open(layout) as f:
         json_layout = json.loads(f.read())
-        kle2netlist(json_layout, output)
+        kle2netlist(json_layout, output, additional_search_path=lib_paths)
