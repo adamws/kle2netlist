@@ -58,4 +58,10 @@ def main(
 
     with open(layout) as f:
         json_layout = json.loads(f.read())
-        kle2netlist(json_layout, output, additional_search_path=lib_paths)
+        kle2netlist(
+            json_layout,
+            output,
+            switch_library="MX_Alps_Hybrid",
+            library_module="MX_Only",
+            additional_search_path=lib_paths,
+        )

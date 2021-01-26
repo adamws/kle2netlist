@@ -1,5 +1,6 @@
 import json
 import os
+import pathlib
 
 import pytest
 from kle2netlist.skidl import kle2netlist
@@ -8,13 +9,21 @@ TWO_KEYS_LAYOUT = """{"meta":{"author":"","backcolor":"#eeeeee","background":nul
 
 
 @pytest.mark.parametrize(
-    ("layout"),
+    ("layout", "switch_library", "library_module"),
     [
-        (TWO_KEYS_LAYOUT),
+        (TWO_KEYS_LAYOUT, "MX_Alps_Hybrid", "MX_Only"),
     ],
 )
-def test_netlist_generation(layout, tmpdir):
+def test_netlist_generation(layout, switch_library, library_module, tmpdir):
     os.chdir(tmpdir)
-    print("CWD: " + os.getcwd())
     f = tmpdir.join("test.net")
-    kle2netlist(json.loads(layout), str(f.realpath()))
+
+    kle2netlist(
+        json.loads(layout),
+        str(f.realpath()),
+        switch_library=switch_library,
+        library_module=library_module,
+        additional_search_path=[
+            "/usr/share/kicad/library",
+        ],
+    )
