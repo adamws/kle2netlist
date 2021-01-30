@@ -42,6 +42,10 @@ def version_callback(value: bool):
 def main(
     layout: str = typer.Option(..., help="Path to kle layout file"),
     output: str = typer.Option(..., help="Path to output"),
+    switch_library: str = typer.Option(
+        "perigoso/Switch_Keyboard", "-swl", "--switch-library", help="todo"
+    ),
+    switch_type: str = typer.Option("MX", "-swt", "--switch-type", help="todo"),
     lib_paths: Optional[List[str]] = typer.Option(
         None, "-l", "--lib-path", help="Path to symbol library"
     ),
@@ -61,7 +65,7 @@ def main(
         kle2netlist(
             json_layout,
             output,
-            switch_library="MX_Alps_Hybrid",
-            library_module="MX_Only",
+            switch_library=switch_library,
+            switch_type=switch_type,
             additional_search_path=lib_paths,
         )

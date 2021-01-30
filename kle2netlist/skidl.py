@@ -1,55 +1,70 @@
-from skidl import *
+import math
+
+import skidl
 
 SUPPORTED_LIBRARIES = {
-    "MX_Alps_Hybrid": {
+    "ai03-2725/MX_Alps_Hybrid": {
         "source": "https://github.com/ai03-2725/MX_Alps_Hybrid",
-        "modules": ["MX_Only"],
-        "MX_Only": {
-            "footprints": [
-                "MXOnly-1U-NoLED",
-                "MXOnly-1.25U-NoLED",
-                "MXOnly-1.5U-NoLED",
-                "MXOnly-1.75U-NoLED",
-                "MXOnly-2U-NoLED",
-                "MXOnly-2.25U-NoLED",
-                "MXOnly-2.5U-NoLED",
-                "MXOnly-2.75U-NoLED",
-                "MXOnly-3U-NoLED",
-                "MXOnly-6U-NoLED",
-                "MXOnly-6.25U-NoLED",
-                "MXOnly-6.5U-NoLED",
-                "MXOnly-7U-NoLED",
-                "MXOnly-8U-NoLED",
-                "MXOnly-9U-NoLED",
-                "MXOnly-10U-NoLED",
-            ],
-            "footprint-nameformat": "MXOnly-{}U-NoLED",
+        "modules": {
+            "MX": {
+                "name": "MX_Only",
+                "footprint-nameformat": "MXOnly-{:g}U-NoLED",
+                "supported-widths": [
+                    1,
+                    1.25,
+                    1.5,
+                    1.75,
+                    2,
+                    2.25,
+                    2.5,
+                    2.75,
+                    3,
+                    6,
+                    6.25,
+                    6.5,
+                    7,
+                    8,
+                    9,
+                    10,
+                ],
+            },
         },
     },
-    "Switch_Keyboard": {
+    "perigoso/Switch_Keyboard": {
         "source": "https://github.com/perigoso/Switch_Keyboard",
-        "modules": [],  # not supported yet
+        "modules": {
+            "MX": {
+                "name": "Switch_Keyboard_Cherry_MX",
+                "footprint-nameformat": "SW_Cherry_MX_PCB_{:.2f}u",
+                "supported-widths": [
+                    1,
+                    1.25,
+                    1.5,
+                    1.75,
+                    2,
+                    2.25,
+                    2.5,
+                    2.75,
+                    3,
+                    4,
+                    4.5,
+                    5,
+                    5.5,
+                    6,
+                    6.25,
+                    6.5,
+                    7,
+                ],
+            },
+        },
     },
 }
 
 
-def get_switch_footprint(
-    library_module, footprint_format, footprints, key_size
-):
-    footprint = f"{footprint_format}".format(key_size)
-    if footprint in footprints:
-        return f"{library_module}:{footprint}"
-    # fallback if footpring not found, add some warning:
-    return f"{library_module}:{footprints[0]}"
-
-
-def handle_key_matrix(keys, **kwargs):
-    switch_library = kwargs["switch_library"]
-    library_module = kwargs["library_module"]
-
-    module = SUPPORTED_LIBRARIES[switch_library][library_module]
-    available_footprints = module["footprints"]
-    footprint_format = module["footprint-nameformat"]
+def handle_key_matrix(keys, switch_module):
+    module_name = switch_module["name"]
+    footprint_format = switch_module["footprint-nameformat"]
+    supported_widths = switch_module["supported-widths"]
 
     rows = {}
     columns = {}
@@ -61,46 +76,53 @@ def handle_key_matrix(keys, **kwargs):
 
         row, column = map(int, labels[0].split(","))
         if not row in rows:
-            rows[row] = Net(f"ROW{row}")
+            rows[row] = skidl.Net(f"ROW{row}")
         if not column in columns:
-            columns[column] = Net(f"COL{column}")
+            columns[column] = skidl.Net(f"COL{column}")
 
-        switch_footprint = get_switch_footprint(
-            library_module, footprint_format, available_footprints, key["width"]
-        )
-        k = Part("Switch", "SW_Push", footprint=switch_footprint)
-        d = Part("Device", "D", footprint="Diode_SMD:D_SOD-323F")
+        key_width = float(key["width"])
+        if key_width not in supported_widths:
+            key_width = 1
 
-        rows[row] += d[1]
-        columns[column] += k[1]
-        _ = k[2] & d[2]
+        switch_footprint = f"{footprint_format}".format(key_width)
+        switch_footprint = f"{module_name}:{switch_footprint}"
+
+        switch = skidl.Part("Switch", "SW_Push", footprint=switch_footprint)
+        diode = skidl.Part("Device", "D", footprint="Diode_SMD:D_SOD-323F")
+
+        if module_name == "Switch_Keyboard_Cherry_MX" and key_width >= 2:
+            stabilizer_footprint = "Mounting_Keyboard_Stabilizer:Stabilizer_Cherry_MX_{:d}u".format(
+                math.trunc(key_width)
+            )
+            stabilizer = skidl.Part(
+                "Mechanical", "MountingHole", footprint=stabilizer_footprint
+            )
+            stabilizer_reference = switch.ref[2:]
+            stabilizer.ref = f"ST{stabilizer_reference}"
+
+        rows[row] += diode[1]
+        columns[column] += switch[1]
+        _ = switch[2] & diode[2]
 
 
 def kle2netlist(layout, output_path, **kwargs):
     additional_search_path = kwargs.get("additional_search_path")
     for path in additional_search_path:
-        lib_search_paths[KICAD].append(path)
+        skidl.lib_search_paths[skidl.KICAD].append(path)
 
-    switch_library = kwargs.get("switch_library")
-    if switch_library not in SUPPORTED_LIBRARIES.keys():
-        raise RuntimeError(
-            f"Unsupported switch_library argument: {switch_library}"
-        )
+    try:
+        switch_library = kwargs.get("switch_library")
+        library = SUPPORTED_LIBRARIES[switch_library]
 
-    library_module = kwargs.get("library_module")
-    supported_modules = SUPPORTED_LIBRARIES[switch_library]["modules"]
-    if library_module not in supported_modules:
-        raise RuntimeError(
-            f"Unsupported library_module argument: {library_module}"
-        )
+        switch_type = kwargs.get("switch_type")
+        switch_module = library["modules"][switch_type]
 
-    arguments = {
-        "switch_library": switch_library,
-        "library_module": library_module,
-    }
-    handle_key_matrix(layout["keys"], **arguments)
+    except KeyError as err:
+        raise RuntimeError("Unsupported argument") from err
 
-    generate_netlist(file_=output_path)
+    handle_key_matrix(layout["keys"], switch_module)
+
+    skidl.generate_netlist(file_=output_path)
 
 
 __all__ = ["kle2netlist"]
