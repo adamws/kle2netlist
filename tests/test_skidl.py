@@ -9,13 +9,15 @@ TWO_KEYS_LAYOUT = """{"meta":{"author":"","backcolor":"#eeeeee","background":nul
 
 
 @pytest.mark.parametrize(
-    ("layout", "switch_library", "switch_type"),
+    ("layout", "switch_library", "switch_footprint"),
     [
         (TWO_KEYS_LAYOUT, "ai03-2725/MX_Alps_Hybrid", "MX"),
+        (TWO_KEYS_LAYOUT, "ai03-2725/MX_Alps_Hybrid", "MX/Alps Hybrid"),
         (TWO_KEYS_LAYOUT, "perigoso/Switch_Keyboard", "MX"),
+        (TWO_KEYS_LAYOUT, "perigoso/Switch_Keyboard", "MX/Alps Hybrid"),
     ],
 )
-def test_netlist_generation(layout, switch_library, switch_type, tmpdir):
+def test_netlist_generation(layout, switch_library, switch_footprint, tmpdir):
     os.chdir(tmpdir)
     f = tmpdir.join("test.net")
 
@@ -23,7 +25,7 @@ def test_netlist_generation(layout, switch_library, switch_type, tmpdir):
         json.loads(layout),
         str(f.realpath()),
         switch_library=switch_library,
-        switch_type=switch_type,
+        switch_footprint=switch_footprint,
         additional_search_path=[
             "/usr/share/kicad/library",
         ],

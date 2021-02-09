@@ -45,7 +45,9 @@ def main(
     switch_library: str = typer.Option(
         "perigoso/Switch_Keyboard", "-swl", "--switch-library", help="todo"
     ),
-    switch_type: str = typer.Option("MX", "-swt", "--switch-type", help="todo"),
+    switch_footprint: str = typer.Option(
+        "MX", "-swf", "--switch-footprint", help="todo"
+    ),
     lib_paths: Optional[List[str]] = typer.Option(
         None, "-l", "--lib-path", help="Path to symbol library"
     ),
@@ -66,6 +68,6 @@ def main(
             json_layout,
             output,
             switch_library=switch_library,
-            switch_type=switch_type,
+            switch_footprint=switch_footprint,
             additional_search_path=lib_paths,
         )

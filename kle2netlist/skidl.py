@@ -9,26 +9,30 @@ SUPPORTED_LIBRARIES = {
             "MX": {
                 "name": "MX_Only",
                 "footprint-nameformat": "MXOnly-{:g}U-NoLED",
-                "supported-widths": [
-                    1,
-                    1.25,
-                    1.5,
-                    1.75,
-                    2,
-                    2.25,
-                    2.5,
-                    2.75,
-                    3,
-                    6,
-                    6.25,
-                    6.5,
-                    7,
-                    8,
-                    9,
-                    10,
-                ],
+            },
+            "MX/Alps Hybrid": {
+                "name": "MX_Alps_Hybrid",
+                "footprint-nameformat": "MX-{:g}U-NoLED",
             },
         },
+        "supported-widths": [
+            1,
+            1.25,
+            1.5,
+            1.75,
+            2,
+            2.25,
+            2.5,
+            2.75,
+            3,
+            6,
+            6.25,
+            6.5,
+            7,
+            8,
+            9,
+            10,
+        ],
     },
     "perigoso/Switch_Keyboard": {
         "source": "https://github.com/perigoso/Switch_Keyboard",
@@ -36,35 +40,38 @@ SUPPORTED_LIBRARIES = {
             "MX": {
                 "name": "Switch_Keyboard_Cherry_MX",
                 "footprint-nameformat": "SW_Cherry_MX_PCB_{:.2f}u",
-                "supported-widths": [
-                    1,
-                    1.25,
-                    1.5,
-                    1.75,
-                    2,
-                    2.25,
-                    2.5,
-                    2.75,
-                    3,
-                    4,
-                    4.5,
-                    5,
-                    5.5,
-                    6,
-                    6.25,
-                    6.5,
-                    7,
-                ],
+            },
+            "MX/Alps Hybrid": {
+                "name": "Switch_Keyboard_Hybrid",
+                "footprint-nameformat": "SW_Hybrid_Cherry_MX_Alps_{:.2f}u",
             },
         },
+        "supported-widths": [
+            1,
+            1.25,
+            1.5,
+            1.75,
+            2,
+            2.25,
+            2.5,
+            2.75,
+            3,
+            4,
+            4.5,
+            5,
+            5.5,
+            6,
+            6.25,
+            6.5,
+            7,
+        ],
     },
 }
 
 
-def handle_key_matrix(keys, switch_module):
+def handle_key_matrix(keys, switch_module, supported_widths):
     module_name = switch_module["name"]
     footprint_format = switch_module["footprint-nameformat"]
-    supported_widths = switch_module["supported-widths"]
 
     rows = {}
     columns = {}
@@ -114,13 +121,14 @@ def kle2netlist(layout, output_path, **kwargs):
         switch_library = kwargs.get("switch_library")
         library = SUPPORTED_LIBRARIES[switch_library]
 
-        switch_type = kwargs.get("switch_type")
-        switch_module = library["modules"][switch_type]
+        switch_footprint = kwargs.get("switch_footprint")
+        switch_module = library["modules"][switch_footprint]
+        supported_widths = library["supported-widths"]
 
     except KeyError as err:
         raise RuntimeError("Unsupported argument") from err
 
-    handle_key_matrix(layout["keys"], switch_module)
+    handle_key_matrix(layout["keys"], switch_module, supported_widths)
 
     skidl.generate_netlist(file_=output_path)
 
