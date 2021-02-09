@@ -105,7 +105,10 @@ def handle_key_matrix(keys, switch_module, supported_widths):
         switch = skidl.Part("Switch", "SW_Push", footprint=switch_footprint)
         diode = skidl.Part("Device", "D", footprint="Diode_SMD:D_SOD-323F")
 
-        if module_name == "Switch_Keyboard_Cherry_MX" and key_width >= 2:
+        if (
+            module_name == "Switch_Keyboard_Cherry_MX"
+            or module_name == "Switch_Keyboard_Hybrid"
+        ) and key_width >= 2:
             stabilizer_footprint = "Mounting_Keyboard_Stabilizer:Stabilizer_Cherry_MX_{:d}u".format(
                 math.trunc(key_width)
             )
