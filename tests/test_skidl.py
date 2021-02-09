@@ -12,8 +12,10 @@ TWO_KEYS_LAYOUT = """{"meta":{"author":"","backcolor":"#eeeeee","background":nul
     ("layout", "switch_library", "switch_footprint"),
     [
         (TWO_KEYS_LAYOUT, "ai03-2725/MX_Alps_Hybrid", "MX"),
+        (TWO_KEYS_LAYOUT, "ai03-2725/MX_Alps_Hybrid", "Alps"),
         (TWO_KEYS_LAYOUT, "ai03-2725/MX_Alps_Hybrid", "MX/Alps Hybrid"),
         (TWO_KEYS_LAYOUT, "perigoso/Switch_Keyboard", "MX"),
+        (TWO_KEYS_LAYOUT, "perigoso/Switch_Keyboard", "Alps"),
         (TWO_KEYS_LAYOUT, "perigoso/Switch_Keyboard", "MX/Alps Hybrid"),
     ],
 )

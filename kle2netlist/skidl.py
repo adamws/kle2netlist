@@ -10,6 +10,10 @@ SUPPORTED_LIBRARIES = {
                 "name": "MX_Only",
                 "footprint-nameformat": "MXOnly-{:g}U-NoLED",
             },
+            "Alps": {
+                "name": "Alps_Only",
+                "footprint-nameformat": "ALPS-{:g}U",
+            },
             "MX/Alps Hybrid": {
                 "name": "MX_Alps_Hybrid",
                 "footprint-nameformat": "MX-{:g}U-NoLED",
@@ -40,6 +44,10 @@ SUPPORTED_LIBRARIES = {
             "MX": {
                 "name": "Switch_Keyboard_Cherry_MX",
                 "footprint-nameformat": "SW_Cherry_MX_PCB_{:.2f}u",
+            },
+            "Alps": {
+                "name": "Switch_Keyboard_Alps_Matias",
+                "footprint-nameformat": "SW_Alps_Matias_{:.2f}u",
             },
             "MX/Alps Hybrid": {
                 "name": "Switch_Keyboard_Hybrid",
