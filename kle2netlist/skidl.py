@@ -124,6 +124,8 @@ def handle_key_matrix(keys, switch_module, supported_widths):
 
 
 def kle2netlist(layout, output_path, **kwargs):
+    default_circuit.reset()
+
     additional_search_path = kwargs.get("additional_search_path")
     for path in additional_search_path:
         skidl.lib_search_paths[skidl.KICAD].append(path)
