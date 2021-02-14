@@ -3,26 +3,47 @@ import os
 import pathlib
 import shutil
 
+import jinja2
 import pytest
 from kle2netlist.skidl import kle2netlist
 
+# reference dicts
+REFERENCE_TEMPLATE_DICT = {
+    "ai03-2725/MX_Alps_Hybrid": {
+        "MX": {"switch_footprint_1u": "MX_Only:MXOnly-1U-NoLED"},
+        "Alps": {"switch_footprint_1u": "Alps_Only:ALPS-1U"},
+        "MX/Alps Hybrid": {"switch_footprint_1u": "MX_Alps_Hybrid:MX-1U-NoLED"},
+    },
+    "perigoso/Switch_Keyboard": {
+        "MX": {
+            "switch_footprint_1u": "Switch_Keyboard_Cherry_MX:SW_Cherry_MX_PCB_1.00u",
+            "switch_footprint_iso_enter": "Switch_Keyboard_Cherry_MX:SW_Cherry_MX_PCB_ISOEnter_Rotated90",
+            "stabilizer_footprint_2u": "Mounting_Keyboard_Stabilizer:Stabilizer_Cherry_MX_2u",
+        },
+        "Alps": {
+            "switch_footprint_1u": "Switch_Keyboard_Alps_Matias:SW_Alps_Matias_1.00u"
+        },
+        "MX/Alps Hybrid": {
+            "switch_footprint_1u": "Switch_Keyboard_Hybrid:SW_Hybrid_Cherry_MX_Alps_1.00u"
+        },
+    },
+}
 
-def compare_files(reference, result):
-    f1 = open(reference)
-    f2 = open(result)
 
-    f1_line = f1.readline()
-    f2_line = f2.readline()
+def assert_netlist(netlist_template, result_file, template_dict):
+    with open(netlist_template) as f:
+        netlist_template = jinja2.Template(f.read())
 
-    while f1_line != "" or f2_line != "":
-        if not f1_line.startswith("#"):
-            assert f1_line == f2_line
+    reference_netlist = netlist_template.render(template_dict)
 
-        f1_line = f1.readline()
-        f2_line = f2.readline()
+    result_netlist = open(result_file)
 
-    f1.close()
-    f2.close()
+    for line in reference_netlist.splitlines():
+        result_line = result_netlist.readline()
+        if not line.startswith("#"):
+            assert line == result_line.rstrip()
+
+    result_netlist.close()
 
 
 @pytest.mark.parametrize(
@@ -34,6 +55,7 @@ def compare_files(reference, result):
         ("2x2", "perigoso/Switch_Keyboard", "MX"),
         ("2x2", "perigoso/Switch_Keyboard", "Alps"),
         ("2x2", "perigoso/Switch_Keyboard", "MX/Alps Hybrid"),
+        ("iso-enter", "perigoso/Switch_Keyboard", "MX"),
     ],
 )
 def test_netlist_generation(
@@ -42,16 +64,12 @@ def test_netlist_generation(
     filename = request.module.__file__
     test_dir, _ = os.path.splitext(filename)
 
-    layout_filename = layout_id + ".json"
-    switch_library_name = switch_library.replace("/", "-")
-    switch_footprint_name = switch_footprint.replace("/", "-").replace(" ", "-")
-    expected_netlist = (
-        f"{layout_id}-{switch_library_name}-{switch_footprint_name}.net"
-    )
+    layout_filename = f"{layout_id}.json"
+    netlist_template = f"{layout_id}.net"
 
     if os.path.isdir(test_dir):
-        shutil.copy(test_dir + "/" + layout_filename, str(tmpdir))
-        shutil.copy(test_dir + "/" + expected_netlist, str(tmpdir))
+        shutil.copy(f"{test_dir}/{layout_filename}", str(tmpdir))
+        shutil.copy(f"{test_dir}/{netlist_template}", str(tmpdir))
 
     with open(tmpdir.join(layout_filename)) as f:
         layout = json.loads(f.read())
@@ -68,4 +86,7 @@ def test_netlist_generation(
         ],
     )
 
-    compare_files(str(tmpdir.join(expected_netlist)), result_netlist_path)
+    template_dict = REFERENCE_TEMPLATE_DICT[switch_library][switch_footprint]
+    assert_netlist(
+        str(tmpdir.join(netlist_template)), result_netlist_path, template_dict
+    )
