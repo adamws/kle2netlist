@@ -14,10 +14,10 @@ REFERENCE_TEMPLATE_DICT = {
         "Alps": {"switch_footprint_1u": "Alps_Only:ALPS-1U"},
         "MX/Alps Hybrid": {"switch_footprint_1u": "MX_Alps_Hybrid:MX-1U-NoLED"},
     },
-    "perigoso/Switch_Keyboard": {
+    "perigoso/keyswitch-kicad-library": {
         "MX": {
             "switch_footprint_1u": "Switch_Keyboard_Cherry_MX:SW_Cherry_MX_PCB_1.00u",
-            "switch_footprint_iso_enter": "Switch_Keyboard_Cherry_MX:SW_Cherry_MX_PCB_ISOEnter_Rotated90",
+            "switch_footprint_iso_enter": "Switch_Keyboard_Cherry_MX:SW_Cherry_MX_PCB_ISOEnter",
             "stabilizer_footprint_2u": "Mounting_Keyboard_Stabilizer:Stabilizer_Cherry_MX_2u",
         },
         "Alps": {
@@ -52,10 +52,10 @@ def assert_netlist(netlist_template, result_file, template_dict):
         ("2x2", "ai03-2725/MX_Alps_Hybrid", "MX"),
         ("2x2", "ai03-2725/MX_Alps_Hybrid", "Alps"),
         ("2x2", "ai03-2725/MX_Alps_Hybrid", "MX/Alps Hybrid"),
-        ("2x2", "perigoso/Switch_Keyboard", "MX"),
-        ("2x2", "perigoso/Switch_Keyboard", "Alps"),
-        ("2x2", "perigoso/Switch_Keyboard", "MX/Alps Hybrid"),
-        ("iso-enter", "perigoso/Switch_Keyboard", "MX"),
+        ("2x2", "perigoso/keyswitch-kicad-library", "MX"),
+        ("2x2", "perigoso/keyswitch-kicad-library", "Alps"),
+        ("2x2", "perigoso/keyswitch-kicad-library", "MX/Alps Hybrid"),
+        ("iso-enter", "perigoso/keyswitch-kicad-library", "MX"),
     ],
 )
 def test_netlist_generation(

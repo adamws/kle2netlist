@@ -40,21 +40,23 @@ SUPPORTED_LIBRARIES = {
             10,
         ],
     },
-    "perigoso/Switch_Keyboard": {
-        "source": "https://github.com/perigoso/Switch_Keyboard",
+    "perigoso/keyswitch-kicad-library": {
+        "source": "https://github.com/perigoso/keyswitch-kicad-library",
         "modules": {
             "MX": {
                 "name": "Switch_Keyboard_Cherry_MX",
                 "footprint-nameformat": "SW_Cherry_MX_PCB_{:.2f}u",
-                "iso-enter": "SW_Cherry_MX_PCB_ISOEnter_Rotated90",
+                "iso-enter": "SW_Cherry_MX_PCB_ISOEnter",
             },
             "Alps": {
                 "name": "Switch_Keyboard_Alps_Matias",
                 "footprint-nameformat": "SW_Alps_Matias_{:.2f}u",
+                "iso-enter": "SW_Alps_Matias_ISOEnter",
             },
             "MX/Alps Hybrid": {
                 "name": "Switch_Keyboard_Hybrid",
                 "footprint-nameformat": "SW_Hybrid_Cherry_MX_Alps_{:.2f}u",
+                "iso-enter": "SW_Hybrid_Cherry_MX_Alps_ISOEnter",
             },
         },
         "supported-widths": [
