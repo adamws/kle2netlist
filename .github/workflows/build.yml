@@ -1,0 +1,47 @@
+name: build
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.7", "3.8"]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2.2.1
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install poetry
+      run: make download-poetry
+
+    - name: Set up cache
+      uses: actions/cache@v2.1.4
+      with:
+        path: .venv
+        key: venv-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}-${{ hashFiles('poetry.lock') }}
+    - name: Install dependencies
+      run: |
+        curl -sSL https://gitlab.com/kicad/libraries/kicad-symbols/-/archive/v5/kicad-symbols-v5.tar.gz -o kicad-symbols-v5.tar.gz
+        mkdir -p /usr/share/kicad
+        tar -xf kicad-symbols-v5.tar.gz -C /usr/share/kicad
+        mv /usr/share/kicad/kicad-symbols-v5 /usr/share/kicad/library
+        source "$HOME/.poetry/env"
+        poetry config virtualenvs.in-project true
+        poetry install
+    - name: Run safety checks
+      run: |
+        source "$HOME/.poetry/env"
+        STRICT=1 BANDIT_STRICT=0 make check-safety
+#     - name: Run style checks
+#       run: |
+#         source "$HOME/.poetry/env"
+#         STRICT=1 make check-style
+    - name: Run tests
+      run: |
+        source "$HOME/.poetry/env"
+        make test
