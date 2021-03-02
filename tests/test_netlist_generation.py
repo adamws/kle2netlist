@@ -47,25 +47,35 @@ def assert_netlist(netlist_template, result_file, template_dict):
 
 
 @pytest.mark.parametrize(
-    ("layout_id", "switch_library", "switch_footprint"),
+    ("layout_id", "switch_library", "switch_footprint", "controller_circuit"),
     [
-        ("2x2", "ai03-2725/MX_Alps_Hybrid", "MX"),
-        ("2x2", "ai03-2725/MX_Alps_Hybrid", "Alps"),
-        ("2x2", "ai03-2725/MX_Alps_Hybrid", "MX/Alps Hybrid"),
-        ("2x2", "perigoso/keyswitch-kicad-library", "MX"),
-        ("2x2", "perigoso/keyswitch-kicad-library", "Alps"),
-        ("2x2", "perigoso/keyswitch-kicad-library", "MX/Alps Hybrid"),
-        ("iso-enter", "perigoso/keyswitch-kicad-library", "MX"),
+        ("2x2", "ai03-2725/MX_Alps_Hybrid", "MX", False),
+        ("2x2", "ai03-2725/MX_Alps_Hybrid", "Alps", False),
+        ("2x2", "ai03-2725/MX_Alps_Hybrid", "MX/Alps Hybrid", False),
+        ("2x2", "perigoso/keyswitch-kicad-library", "MX", False),
+        ("2x2", "perigoso/keyswitch-kicad-library", "Alps", False),
+        ("2x2", "perigoso/keyswitch-kicad-library", "MX/Alps Hybrid", False),
+        ("iso-enter", "perigoso/keyswitch-kicad-library", "MX", False),
+        ("empty", "ai03-2725/MX_Alps_Hybrid", "MX", True),
+        ("empty", "perigoso/keyswitch-kicad-library", "MX", True),
+        ("2x2", "ai03-2725/MX_Alps_Hybrid", "MX", True),
+        ("2x2", "perigoso/keyswitch-kicad-library", "MX", True),
     ],
 )
 def test_netlist_generation(
-    layout_id, switch_library, switch_footprint, tmpdir, request
+    layout_id,
+    switch_library,
+    switch_footprint,
+    controller_circuit,
+    tmpdir,
+    request,
 ):
     filename = request.module.__file__
     test_dir, _ = os.path.splitext(filename)
 
     layout_filename = f"{layout_id}.json"
-    netlist_template = f"{layout_id}.net"
+    controller_circuit_suffix = "-with-uc" if controller_circuit else ""
+    netlist_template = f"{layout_id}{controller_circuit_suffix}.net"
 
     if os.path.isdir(test_dir):
         shutil.copy(f"{test_dir}/{layout_filename}", str(tmpdir))
@@ -84,6 +94,7 @@ def test_netlist_generation(
         additional_search_path=[
             "/usr/share/kicad/library",
         ],
+        controller_circuit=controller_circuit,
     )
 
     template_dict = REFERENCE_TEMPLATE_DICT[switch_library][switch_footprint]

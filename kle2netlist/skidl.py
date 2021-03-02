@@ -82,6 +82,34 @@ SUPPORTED_LIBRARIES = {
 }
 
 
+ATMEGA32U4AU_PIN_ASSIGN_ORDER = [
+    "PB0",
+    "PB1",
+    "PB2",
+    "PB3",
+    "PB4",
+    "PB5",
+    "PB6",
+    "PB7",
+    "PC6",
+    "PC7",
+    "PD0",
+    "PD1",
+    "PD2",
+    "PD3",
+    "PD4",
+    "PD5",
+    "PD6",
+    "PD7",
+    "PF0",
+    "PF1",
+    "PF4",
+    "PF5",
+    "PF6",
+    "PF7",
+]
+
+
 def is_iso_enter(key):
     key_width = float(key["width"])
     key_height = float(key["height"])
@@ -184,6 +212,115 @@ def handle_switch_matrix(keys, switch_module, supported_widths):
         columns[column] += switch[1]
         _ = switch[2] & diode[2]
 
+    return rows, columns
+
+
+def add_controller_atmega32u4_au_v1():
+    # create templates
+    C = skidl.Part(
+        "Device",
+        "C",
+        skidl.TEMPLATE,
+        footprint="Capacitor_SMD:C_0603_1608Metric",
+    )
+    R = skidl.Part(
+        "Device",
+        "R",
+        skidl.TEMPLATE,
+        footprint="Resistor_SMD:R_0603_1608Metric",
+    )
+
+    # start uc circuitry
+    uc = skidl.Part(
+        "MCU_Microchip_ATmega",
+        "ATmega32U4-AU",
+        footprint="Package_QFP:TQFP-44_10x10mm_P0.8mm",
+    )
+    vcc = skidl.Net("VCC")
+    gnd = skidl.Net("GND")
+
+    uc["UVCC", "VCC", "AVCC"] += vcc
+    uc["UGND", "GND"] += gnd
+
+    # crystal oscillator
+    crystal = skidl.Part(
+        "Device",
+        "Crystal_GND24",
+        footprint="Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm",
+    )
+    c1, c2 = C(num_copies=2, value="22p")
+
+    c1[1] += crystal[1]
+    c2[1] += crystal[3]
+    gnd += c1[2], c2[2], crystal[2], crystal[4]
+    uc["XTAL1"] += crystal[1]
+    uc["XTAL2"] += crystal[3]
+
+    # decoupling capacitors
+    c3, c4, c5, c6 = C(num_copies=4, value="0.1u")
+    c7 = C(value="4.7u")
+
+    for c in [c3, c4, c5, c6, c7]:
+        vcc += c[1]
+        gnd += c[2]
+
+    # ucap
+    c8 = C(value="1u")
+    uc["UCAP"] += c8[1]
+    gnd += c8[2]
+
+    # usb
+    usb = skidl.Part(
+        "Connector",
+        "USB_C_Plug_USB2.0",
+        footprint="Connector_USB:USB_C_Receptacle_XKB_U262-16XN-4BVC11",
+    )
+    esd_protection = skidl.Part(
+        "Power_Protection", "TPD2S017", footprint="Package_TO_SOT_SMD:SOT-23-6"
+    )
+    r1, r2 = R(num_copies=2, value="22")
+
+    usb["VBUS"] += vcc
+    usb["GND", "SHIELD"] += gnd
+    esd_protection["VCC"] += vcc
+    esd_protection["GND"] += gnd
+
+    usb["D-"] += esd_protection["CH1In"]
+    usb["D+"] += esd_protection["CH2Int"]  # bug in footprint pin name?
+    esd_protection["CH1Out"] += r1[2]
+    esd_protection["CH2Out"] += r2[2]
+    r1[1] += uc["D-"]
+    r2[1] += uc["D+"]
+
+    # pe2 and reset
+    r3, r4 = R(num_copies=2, value="10k")
+    button = skidl.Part(
+        "Switch",
+        "SW_SPST",
+        footprint="Button_Switch_SMD:SW_SPST_TL3342",
+        ref="RST",
+    )
+
+    uc["~HWB~/PE2"] += r3[1]
+    gnd += r3[2]
+
+    uc["~RESET"] += r4[1]
+    vcc += r4[2]
+
+    gnd += button[1]
+    uc["~RESET"] += button[2]
+
+    return uc
+
+
+def add_controller_circuit(variant, rows, columns):
+    uc = add_controller_atmega32u4_au_v1()
+    pins = ATMEGA32U4AU_PIN_ASSIGN_ORDER[:]
+    for _, row in rows.items():
+        row += uc[pins.pop(0)]
+    for _, column in columns.items():
+        column += uc[pins.pop(0)]
+
 
 def kle2netlist(layout, output_path, **kwargs):
     default_circuit.reset()
@@ -203,7 +340,12 @@ def kle2netlist(layout, output_path, **kwargs):
     except KeyError as err:
         raise RuntimeError("Unsupported argument") from err
 
-    handle_switch_matrix(layout["keys"], switch_module, supported_widths)
+    rows, columns = handle_switch_matrix(
+        layout["keys"], switch_module, supported_widths
+    )
+
+    if kwargs.get("controller_circuit"):
+        add_controller_circuit("atmega32u4_au_v1", rows, columns)
 
     skidl.generate_netlist(file_=output_path)
 

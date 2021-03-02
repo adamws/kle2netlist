@@ -51,6 +51,11 @@ def main(
     lib_paths: Optional[List[str]] = typer.Option(
         None, "-l", "--lib-path", help="Path to symbol library"
     ),
+    controller_circuit: bool = typer.Option(
+        False,
+        "--controller-circuit",
+        help="Add ATmega32U4-AU minimal circuitry",
+    ),
     version: bool = typer.Option(
         None,
         "-v",
@@ -70,4 +75,5 @@ def main(
             switch_library=switch_library,
             switch_footprint=switch_footprint,
             additional_search_path=lib_paths,
+            controller_circuit=controller_circuit,
         )
