@@ -272,7 +272,7 @@ def add_controller_atmega32u4_au_v1():
     # usb
     usb = skidl.Part(
         "Connector",
-        "USB_C_Plug_USB2.0",
+        "USB_C_Receptacle_USB2.0",
         footprint="Connector_USB:USB_C_Receptacle_XKB_U262-16XN-4BVC11",
     )
     esd_protection = skidl.Part(
