@@ -239,8 +239,8 @@ def add_controller_atmega32u4_au_v1():
     vcc = skidl.Net("VCC")
     gnd = skidl.Net("GND")
 
-    uc["UVCC", "VCC", "AVCC"] += vcc
-    uc["UGND", "GND"] += gnd
+    vcc += uc["UVCC", "VCC", "AVCC"]
+    gnd += uc["UGND", "GND"]
 
     # crystal oscillator
     crystal = skidl.Part(
@@ -250,11 +250,11 @@ def add_controller_atmega32u4_au_v1():
     )
     c1, c2 = C(num_copies=2, value="22p")
 
-    c1[1] += crystal[1]
-    c2[1] += crystal[3]
+    net_xtal1 = skidl.Net("mcu/XTAL1")
+    net_xtal1 += c1[1], crystal[1], uc["XTAL1"]
+    net_xtal2 = skidl.Net("mcu/XTAL2")
+    net_xtal2 += c2[1], crystal[3], uc["XTAL2"]
     gnd += c1[2], c2[2], crystal[2], crystal[4]
-    uc["XTAL1"] += crystal[1]
-    uc["XTAL2"] += crystal[3]
 
     # decoupling capacitors
     c3, c4, c5, c6 = C(num_copies=4, value="0.1u")
@@ -266,7 +266,8 @@ def add_controller_atmega32u4_au_v1():
 
     # ucap
     c8 = C(value="1u")
-    uc["UCAP"] += c8[1]
+    net_ucap = skidl.Net("mcu/UCAP")
+    net_ucap += c8[1], uc["UCAP"]
     gnd += c8[2]
 
     # usb
@@ -280,17 +281,29 @@ def add_controller_atmega32u4_au_v1():
     )
     r1, r2 = R(num_copies=2, value="22")
 
-    usb["VBUS"] += vcc
-    usb["GND", "SHIELD"] += gnd
-    esd_protection["VCC"] += vcc
-    esd_protection["GND"] += gnd
+    vcc += usb["VBUS"], esd_protection["VCC"]
+    gnd += usb["GND", "SHIELD"], esd_protection["GND"]
 
-    usb["D-"] += esd_protection["CH1In"]
-    usb["D+"] += esd_protection["CH2Int"]  # bug in footprint pin name?
-    esd_protection["CH1Out"] += r1[2]
-    esd_protection["CH2Out"] += r2[2]
-    r1[1] += uc["D-"]
-    r2[1] += uc["D+"]
+    net_usb_dm = skidl.Net("usb/D-")
+    net_usb_dm += usb["D-"], esd_protection["CH1In"]
+
+    net_usb_dp = skidl.Net("usb/D+")
+    net_usb_dp += (
+        usb["D+"],
+        esd_protection["CH2Int"],
+    )  # CH2Int -> bug in footprint pin name?
+
+    net_esd_dm = skidl.Net("u2/D-")
+    net_esd_dm += esd_protection["CH1Out"], r1[2]
+
+    net_esd_dp = skidl.Net("u2/D+")
+    net_esd_dp += esd_protection["CH2Out"], r2[2]
+
+    net_uc_dm = skidl.Net("mcu/D-")
+    net_uc_dm += r1[1], uc["D-"]
+
+    net_uc_dp = skidl.Net("mcu/D+")
+    net_uc_dp += r2[1], uc["D+"]
 
     # pe2 and reset
     r3, r4 = R(num_copies=2, value="10k")
@@ -301,14 +314,14 @@ def add_controller_atmega32u4_au_v1():
         ref="RST",
     )
 
-    uc["~HWB~/PE2"] += r3[1]
+    net_hwb = skidl.Net("mcu/~HWB~/PE2")
+    net_hwb += uc["~HWB~/PE2"], r3[1]
     gnd += r3[2]
 
-    uc["~RESET"] += r4[1]
+    net_reset = skidl.Net("mcu/~RESET")
+    net_reset += uc["~RESET"], r4[1], button[2]
     vcc += r4[2]
-
     gnd += button[1]
-    uc["~RESET"] += button[2]
 
     return uc
 
