@@ -335,9 +335,8 @@ def add_controller_circuit(variant, rows, columns):
         column += uc[pins.pop(0)]
 
 
-def kle2netlist(layout, output_path, **kwargs):
+def build_circuit(layout, **kwargs):
     default_circuit.reset()
-
     additional_search_path = kwargs.get("additional_search_path")
     for path in additional_search_path:
         skidl.lib_search_paths[skidl.KICAD].append(path)
@@ -360,7 +359,14 @@ def kle2netlist(layout, output_path, **kwargs):
     if kwargs.get("controller_circuit"):
         add_controller_circuit("atmega32u4_au_v1", rows, columns)
 
-    skidl.generate_netlist(file_=output_path)
+
+def generate_netlist(output, netlist_type="net"):
+    if netlist_type == "net":
+        skidl.generate_netlist(file_=output)
+    elif netlist_type == "xml":
+        skidl.generate_xml(file_=output)
+    else:
+        raise RuntimeError(f"Unsupported netlist type: {netlist_type}")
 
 
-__all__ = ["kle2netlist"]
+__all__ = ["build_circuit", "generate_netlist"]

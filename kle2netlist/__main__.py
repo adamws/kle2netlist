@@ -5,11 +5,12 @@ from typing import List, Optional
 import json
 import random
 from enum import Enum
+from pathlib import Path
 
 import typer
-from kle2netlist import __version__
-from kle2netlist.skidl import kle2netlist
 from rich.console import Console
+
+from . import __version__, skidl
 
 
 class Color(str, Enum):
@@ -41,12 +42,20 @@ def version_callback(value: bool):
 @app.command(name="")
 def main(
     layout: str = typer.Option(..., help="Path to kle layout file"),
-    output: str = typer.Option(..., help="Path to output"),
+    output: str = typer.Option(
+        ".", "--output-dir", help="Output directory, created if not existing"
+    ),
+    name: str = typer.Option(
+        "keyboard", "--name", help="Netlist name without file extension"
+    ),
     switch_library: str = typer.Option(
-        "perigoso/Switch_Keyboard", "-swl", "--switch-library", help="todo"
+        "perigoso/keyswitch-kicad-library",
+        "-swl",
+        "--switch-library",
+        help="Switch library",
     ),
     switch_footprint: str = typer.Option(
-        "MX", "-swf", "--switch-footprint", help="todo"
+        "MX", "-swf", "--switch-footprint", help="Switch footprint"
     ),
     lib_paths: Optional[List[str]] = typer.Option(
         None, "-l", "--lib-path", help="Path to symbol library"
@@ -55,6 +64,9 @@ def main(
         False,
         "--controller-circuit",
         help="Add ATmega32U4-AU minimal circuitry",
+    ),
+    no_xml: bool = typer.Option(
+        False, "--no-xml", help="Skip xml netlist generation"
     ),
     version: bool = typer.Option(
         None,
@@ -67,13 +79,35 @@ def main(
 ):
     """Generates KiCad netlist for a given keyboard layout json file."""
 
+    output = Path(output)
+    if output.is_file():
+        console.print(
+            f"[red]error:[/] --output-directory pointing to an existing file: [bold]{output}[/]"
+        )
+        raise typer.Exit(code=1)
+
+    output.mkdir(exist_ok=True, parents=True)
+
+    if not Path(layout).is_file():
+        console.print(
+            f"[red]error:[/] invalid --layout option: [bold]{layout}[/] file not found"
+        )
+        raise typer.Exit(code=1)
+
     with open(layout) as f:
         json_layout = json.loads(f.read())
-        kle2netlist(
+        skidl.build_circuit(
             json_layout,
-            output,
             switch_library=switch_library,
             switch_footprint=switch_footprint,
             additional_search_path=lib_paths,
             controller_circuit=controller_circuit,
         )
+
+    skidl.generate_netlist(str(output.joinpath(f"{name}.net")))
+    if not no_xml:
+        skidl.generate_netlist(str(output.joinpath(f"{name}.xml")), "xml")
+
+
+if __name__ == "__main__":
+    app()

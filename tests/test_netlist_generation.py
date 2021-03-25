@@ -5,7 +5,7 @@ import shutil
 
 import jinja2
 import pytest
-from kle2netlist.skidl import kle2netlist
+from kle2netlist.skidl import build_circuit, generate_netlist
 
 # reference dicts
 REFERENCE_TEMPLATE_DICT = {
@@ -86,9 +86,8 @@ def test_netlist_generation(
 
     result_netlist_path = str(tmpdir.join("test.net"))
 
-    kle2netlist(
+    build_circuit(
         layout,
-        result_netlist_path,
         switch_library=switch_library,
         switch_footprint=switch_footprint,
         additional_search_path=[
@@ -96,6 +95,7 @@ def test_netlist_generation(
         ],
         controller_circuit=controller_circuit,
     )
+    generate_netlist(result_netlist_path)
 
     template_dict = REFERENCE_TEMPLATE_DICT[switch_library][switch_footprint]
     assert_netlist(
