@@ -90,9 +90,6 @@ def test_netlist_generation(
         layout,
         switch_library=switch_library,
         switch_footprint=switch_footprint,
-        additional_search_path=[
-            "/usr/share/kicad/library",
-        ],
         controller_circuit=controller_circuit,
     )
     generate_netlist(result_netlist_path)

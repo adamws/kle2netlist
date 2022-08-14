@@ -1,4 +1,6 @@
+import importlib.resources
 import math
+import sys
 
 import skidl
 
@@ -338,8 +340,19 @@ def add_controller_circuit(variant, rows, columns):
 def build_circuit(layout, **kwargs):
     default_circuit.reset()
     additional_search_path = kwargs.get("additional_search_path")
-    for path in additional_search_path:
-        skidl.lib_search_paths[skidl.KICAD].append(path)
+    if additional_search_path:
+        for path in additional_search_path:
+            skidl.lib_search_paths[skidl.KICAD].append(path)
+
+    # try using bundled symbols as fallback:
+    if sys.version_info[1] == 10:
+        with importlib.resources.path("kle2netlist", "data") as p:
+            default_search_path = p.joinpath("kicad-symbols")
+    else:
+        # for python <3.9 you can't use directory as resource:
+        with importlib.resources.path("kle2netlist", "skidl.py") as p:
+            default_search_path = p.parent.joinpath("data/kicad-symbols")
+    skidl.lib_search_paths[skidl.KICAD].append(default_search_path)
 
     try:
         switch_library = kwargs.get("switch_library")

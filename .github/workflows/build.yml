@@ -11,6 +11,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      with:
+        submodules: recursive
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2.2.1
       with:
@@ -26,10 +28,6 @@ jobs:
         key: venv-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}-${{ hashFiles('poetry.lock') }}
     - name: Install dependencies
       run: |
-        curl -sSL https://gitlab.com/kicad/libraries/kicad-symbols/-/archive/v5/kicad-symbols-v5.tar.gz -o kicad-symbols-v5.tar.gz
-        mkdir -p /usr/share/kicad
-        tar -xf kicad-symbols-v5.tar.gz -C /usr/share/kicad
-        mv /usr/share/kicad/kicad-symbols-v5 /usr/share/kicad/library
         source "$HOME/.poetry/env"
         poetry config virtualenvs.in-project true
         poetry install
