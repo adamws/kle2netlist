@@ -98,3 +98,39 @@ def test_netlist_generation(
     assert_netlist(
         str(tmpdir.join(netlist_template)), result_netlist_path, template_dict
     )
+
+
+@pytest.mark.parametrize(
+    ("labels"),
+    [
+        [None, None],
+        [None, "1,2"],
+        ["1,x"],
+        ["x,1"],
+        ["1,"],
+        [",1"],
+        ["1, 2"],
+        ["'1,2'"],
+    ],
+)
+def test_layout_with_wrong_labels(labels):
+    layout = {
+        "keys": [
+            {
+                "labels": labels,
+                "x": 0,
+                "y": 0,
+                "width": 1,
+                "height": 1,
+                "width2": 1,
+                "height2": 1,
+            },
+        ]
+    }
+    with pytest.raises(RuntimeError, match="Key label invalid"):
+        build_circuit(
+            layout,
+            switch_library="ai03-2725/MX_Alps_Hybrid",
+            switch_footprint="MX",
+            controller_circuit=False,
+        )

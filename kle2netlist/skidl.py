@@ -1,5 +1,6 @@
 import importlib.resources
 import math
+import re
 import sys
 
 import skidl
@@ -187,6 +188,13 @@ def add_regular_switch(switch_module, key_width):
     return switch, diode
 
 
+def is_key_label_valid(label):
+    if label and re.match(r"^[0-9]+,[0-9]+$", label):
+        return True
+    else:
+        return False
+
+
 def handle_switch_matrix(keys, switch_module, supported_widths):
     rows = {}
     columns = {}
@@ -194,9 +202,15 @@ def handle_switch_matrix(keys, switch_module, supported_widths):
     for key in keys:
         labels = key["labels"]
         if not labels:
-            raise RuntimeError("Key label for matrix position missing")
+            raise RuntimeError("Key labels missing")
+
+        if not is_key_label_valid(labels[0]):
+            raise RuntimeError(
+                f"Key label invalid: '{labels[0]}' - label needs to follow 'row,column' format, for example '1,2'"
+            )
 
         row, column = map(int, labels[0].split(","))
+
         if not row in rows:
             rows[row] = skidl.Net(f"ROW{row}")
         if not column in columns:
