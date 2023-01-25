@@ -249,7 +249,7 @@ def add_controller_atmega32u4_au_v1():
     # start uc circuitry
     uc = skidl.Part(
         "MCU_Microchip_ATmega",
-        "ATmega32U4-AU",
+        "ATmega32U4-A",
         footprint="Package_QFP:TQFP-44_10x10mm_P0.8mm",
     )
     vcc = skidl.Net("VCC")
@@ -330,12 +330,12 @@ def add_controller_atmega32u4_au_v1():
         ref="RST",
     )
 
-    net_hwb = skidl.Net("mcu/~HWB~/PE2")
-    net_hwb += uc["~HWB~/PE2"], r3[1]
+    net_hwb = skidl.Net("mcu/~{HWB}/PE2")
+    net_hwb += uc["~{HWB}/PE2"], r3[1]
     gnd += r3[2]
 
-    net_reset = skidl.Net("mcu/~RESET")
-    net_reset += uc["~RESET"], r4[1], button[2]
+    net_reset = skidl.Net("mcu/~{RESET}")
+    net_reset += uc["~{RESET}"], r4[1], button[2]
     vcc += r4[2]
     gnd += button[1]
 
