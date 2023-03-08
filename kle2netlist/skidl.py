@@ -255,7 +255,7 @@ def add_controller_atmega32u4_au_v1():
     vcc = skidl.Net("VCC")
     gnd = skidl.Net("GND")
 
-    vcc += uc["UVCC", "VCC", "AVCC"]
+    vcc += uc["UVCC", "VCC", "AVCC", "VBUS"]
     gnd += uc["UGND", "GND"]
 
     # crystal oscillator
