@@ -6,7 +6,7 @@ build-backend = "poetry.masonry.api"
 
 [tool.poetry]
 name = "kle2netlist"
-version = "0.1.0"
+version = "0.2"
 description = "KiCad netlist generator for mechanical keyboards "
 readme = "README.md"
 include = ["kle2netlist/data"]
