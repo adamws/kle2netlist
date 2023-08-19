@@ -1,5 +1,5 @@
+import bisect
 import importlib.resources
-import math
 import re
 import sys
 
@@ -42,7 +42,9 @@ SUPPORTED_LIBRARIES = {
             9,
             10,
         ],
+        "supported-stabilizers": [],  # stabilizers are part of switch footprint
     },
+    # tested with https://github.com/perigoso/keyswitch-kicad-library/releases/tag/v2.2
     "perigoso/keyswitch-kicad-library": {
         "source": "https://github.com/perigoso/keyswitch-kicad-library",
         "modules": {
@@ -74,16 +76,22 @@ SUPPORTED_LIBRARIES = {
             3,
             4,
             4.5,
-            5,
             5.5,
             6,
             6.25,
             6.5,
             7,
         ],
+        "supported-stabilizers": [
+            2,
+            3,
+            6,
+            6.25,
+            7,
+            8,
+        ],
     },
 }
-
 
 ATMEGA32U4AU_PIN_ASSIGN_ORDER = [
     "PB0",
@@ -126,16 +134,33 @@ def is_iso_enter(key):
     )
 
 
+def find_closest_smaller_or_equal(lst, target):
+    index = bisect.bisect_right(lst, target)
+    if index == 0:
+        return None  # No value is smaller or equal
+    else:
+        return lst[index - 1]
+
+
 def add_stabilizer(reference, key_width):
-    stabilizer_footprint = (
-        "Mounting_Keyboard_Stabilizer:Stabilizer_Cherry_MX_{:d}u".format(
-            math.trunc(key_width)
+    # this function works only for perigoso/keyswitch-kicad-library
+    supported_stabilizer_size = SUPPORTED_LIBRARIES[
+        "perigoso/keyswitch-kicad-library"
+    ]["supported-stabilizers"]
+    stabilizer_width = find_closest_smaller_or_equal(
+        supported_stabilizer_size, key_width
+    )
+
+    if stabilizer_width:
+        stabilizer_footprint = (
+            "Mounting_Keyboard_Stabilizer:Stabilizer_Cherry_MX_{:.2f}u".format(
+                stabilizer_width
+            )
         )
-    )
-    stabilizer = skidl.Part(
-        "Mechanical", "MountingHole", footprint=stabilizer_footprint
-    )
-    stabilizer.ref = reference
+        stabilizer = skidl.Part(
+            "Mechanical", "MountingHole", footprint=stabilizer_footprint
+        )
+        stabilizer.ref = reference
 
 
 def add_iso_enter_switch(switch_module):
@@ -157,7 +182,7 @@ def add_iso_enter_switch(switch_module):
         or module_name == "Switch_Keyboard_Hybrid"
     ):
         stabilizer_footprint = (
-            "Mounting_Keyboard_Stabilizer:Stabilizer_Cherry_MX_2u"
+            "Mounting_Keyboard_Stabilizer:Stabilizer_Cherry_MX_2.00u"
         )
         stabilizer = skidl.Part(
             "Mechanical", "MountingHole", footprint=stabilizer_footprint
