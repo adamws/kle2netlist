@@ -26,9 +26,9 @@ $ kle2netlist --help
  Generates KiCad netlist for a given keyboard layout json file.
 
 ╭─ Options ────────────────────────────────────────────────────────────────────────╮
-│ *  --layout                        TEXT  Path to kle layout file [default: None] │
+│ *  --layout                        PATH  Path to kle layout file [default: None] │
 │                                          [required]                              │
-│    --output-dir                    TEXT  Output directory, created if not        │
+│    --output-dir                    PATH  Output directory, created if not        │
 │                                          existing                                │
 │                                          [default: .]                            │
 │    --name                          TEXT  Netlist name without file extension     │

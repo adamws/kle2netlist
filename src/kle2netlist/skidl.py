@@ -178,10 +178,7 @@ def add_iso_enter_switch(switch_module):
     switch = skidl.Part("Switch", "SW_Push", footprint=switch_footprint)
     diode = skidl.Part("Device", "D", footprint="Diode_SMD:D_SOD-323F")
 
-    if (
-        module_name == "Switch_Keyboard_Cherry_MX"
-        or module_name == "Switch_Keyboard_Hybrid"
-    ):
+    if module_name in ["Switch_Keyboard_Cherry_MX", "Switch_Keyboard_Hybrid"]:
         stabilizer_footprint = "Mounting_Keyboard_Stabilizer:Stabilizer_Cherry_MX_2.00u"
         stabilizer = skidl.Part(
             "Mechanical", "MountingHole", footprint=stabilizer_footprint
@@ -203,9 +200,9 @@ def add_regular_switch(switch_module, key_width):
     diode = skidl.Part("Device", "D", footprint="Diode_SMD:D_SOD-323F")
 
     if (
-        module_name == "Switch_Keyboard_Cherry_MX"
-        or module_name == "Switch_Keyboard_Hybrid"
-    ) and key_width >= 2:
+        module_name in ["Switch_Keyboard_Cherry_MX", "Switch_Keyboard_Hybrid"]
+        and key_width >= 2
+    ):
         switch_reference_number = switch.ref[2:]
         add_stabilizer(f"ST{switch_reference_number}", key_width)
 
@@ -226,12 +223,15 @@ def handle_switch_matrix(keys, switch_module, supported_widths):
     for key in keys:
         labels = key["labels"]
         if not labels:
-            raise RuntimeError("Key labels missing")
+            msg = "Key labels missing"
+            raise RuntimeError(msg)
 
         if not is_key_label_valid(labels[0]):
-            raise RuntimeError(
-                f"Key label invalid: '{labels[0]}' - label needs to follow 'row,column' format, for example '1,2'"
+            msg = (
+                f"Key label invalid: '{labels[0]}' - "
+                "label needs to follow 'row,column' format, for example '1,2'"
             )
+            raise RuntimeError(msg)
 
         row, column = map(int, labels[0].split(","))
 
@@ -367,6 +367,7 @@ def add_controller_atmega32u4_au_v1():
 
 
 def add_controller_circuit(variant, rows, columns):
+    _ = variant
     uc = add_controller_atmega32u4_au_v1()
     pins = ATMEGA32U4AU_PIN_ASSIGN_ORDER[:]
     for _, row in rows.items():
@@ -401,7 +402,8 @@ def build_circuit(layout, **kwargs):
         supported_widths = library["supported-widths"]
 
     except KeyError as err:
-        raise RuntimeError("Unsupported argument") from err
+        msg = "Unsupported argument"
+        raise RuntimeError(msg) from err
 
     rows, columns = handle_switch_matrix(
         layout["keys"], switch_module, supported_widths
@@ -417,7 +419,8 @@ def generate_netlist(output, netlist_type="net"):
     elif netlist_type == "xml":
         skidl.generate_xml(file_=output)
     else:
-        raise RuntimeError(f"Unsupported netlist type: {netlist_type}")
+        msg = f"Unsupported netlist type: {netlist_type}"
+        raise RuntimeError(msg)
 
 
 __all__ = ["build_circuit", "generate_netlist"]

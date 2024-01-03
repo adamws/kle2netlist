@@ -39,8 +39,8 @@ def version_callback(value: bool):
 
 @app.command(name="")
 def main(
-    layout: str = typer.Option(..., help="Path to kle layout file"),
-    output: str = typer.Option(
+    layout: Path = typer.Option(..., help="Path to kle layout file"),
+    output: Path = typer.Option(
         ".", "--output-dir", help="Output directory, created if not existing"
     ),
     name: str = typer.Option(
@@ -75,7 +75,6 @@ def main(
 ):
     """Generates KiCad netlist for a given keyboard layout json file."""
 
-    output = Path(output)
     if output.is_file():
         console.print(
             f"[red]error:[/] --output-directory pointing to an existing file: [bold]{output}[/]"
