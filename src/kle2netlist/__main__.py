@@ -1,17 +1,16 @@
 # SPDX-FileCopyrightText: 2021-present adamws <adamws@users.noreply.github.com>
 #
 # SPDX-License-Identifier: MIT
-from typing import List, Optional
-
 import json
 from enum import Enum
 from pathlib import Path
+from typing import List, Optional
 
 import typer
 from rich.console import Console
 
-from kle2netlist.skidl import build_circuit, generate_netlist
 from kle2netlist._version import __version__
+from kle2netlist.skidl import build_circuit, generate_netlist
 
 
 class Color(str, Enum):

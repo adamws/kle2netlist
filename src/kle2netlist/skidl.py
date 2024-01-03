@@ -156,9 +156,7 @@ def add_stabilizer(reference, key_width):
 
     if stabilizer_width:
         stabilizer_footprint = (
-            "Mounting_Keyboard_Stabilizer:Stabilizer_Cherry_MX_{:.2f}u".format(
-                stabilizer_width
-            )
+            f"Mounting_Keyboard_Stabilizer:Stabilizer_Cherry_MX_{stabilizer_width:.2f}u"
         )
         stabilizer = skidl.Part(
             "Mechanical", "MountingHole", footprint=stabilizer_footprint
@@ -239,9 +237,9 @@ def handle_switch_matrix(keys, switch_module, supported_widths):
 
         row, column = map(int, labels[0].split(","))
 
-        if not row in rows:
+        if row not in rows:
             rows[row] = skidl.Net(f"ROW{row}")
-        if not column in columns:
+        if column not in columns:
             columns[column] = skidl.Net(f"COL{column}")
 
         if is_iso_enter(key):

@@ -7,6 +7,7 @@ import shutil
 
 import jinja2
 import pytest
+
 from kle2netlist.skidl import build_circuit, generate_netlist
 
 # reference dicts
