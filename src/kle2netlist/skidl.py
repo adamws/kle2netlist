@@ -367,9 +367,19 @@ def add_controller_atmega32u4_au_v1():
 
 
 def add_controller_circuit(variant, rows, columns):
-    _ = variant
     uc = add_controller_atmega32u4_au_v1()
     pins = ATMEGA32U4AU_PIN_ASSIGN_ORDER[:]
+    num_rows = len(rows)
+    num_columns = len(columns)
+    num_pins = len(pins)
+    if num_rows + num_columns > num_pins:
+        msg = (
+            f"Controller circuit '{variant}' can't handle requested matrix, "
+            f"available pins: {num_pins}, required: "
+            f"{num_rows} (rows) + {num_columns} (columns)"
+        )
+        raise RuntimeError(msg)
+
     for _, row in rows.items():
         row += uc[pins.pop(0)]
     for _, column in columns.items():

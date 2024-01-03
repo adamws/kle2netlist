@@ -89,19 +89,23 @@ def main(
         )
         raise typer.Exit(code=1)
 
-    with open(layout) as f:
-        json_layout = json.loads(f.read())
-        build_circuit(
-            json_layout,
-            switch_library=switch_library,
-            switch_footprint=switch_footprint,
-            additional_search_path=lib_paths,
-            controller_circuit=controller_circuit,
-        )
+    try:
+        with open(layout) as f:
+            json_layout = json.loads(f.read())
+            build_circuit(
+                json_layout,
+                switch_library=switch_library,
+                switch_footprint=switch_footprint,
+                additional_search_path=lib_paths,
+                controller_circuit=controller_circuit,
+            )
 
-    generate_netlist(str(output.joinpath(f"{name}.net")))
-    if not no_xml:
-        generate_netlist(str(output.joinpath(f"{name}.xml")), "xml")
+        generate_netlist(str(output.joinpath(f"{name}.net")))
+        if not no_xml:
+            generate_netlist(str(output.joinpath(f"{name}.xml")), "xml")
+    except RuntimeError as e:
+        console.print(f"[red]error:[/] [bold]{e}[/]")
+        raise typer.Exit(code=1)
 
 
 if __name__ == "__main__":
