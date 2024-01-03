@@ -652,3 +652,6 @@ healthchecksdb
 MigrationBackup/
 
 # End of https://www.gitignore.io/api/osx,python,pycharm,windows,visualstudio,visualstudiocode
+
+# hatch-vcs generated version file
+src/kle2netlist/_version.py

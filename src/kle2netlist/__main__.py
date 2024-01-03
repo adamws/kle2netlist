@@ -1,16 +1,17 @@
-# type: ignore[attr-defined]
-
+# SPDX-FileCopyrightText: 2021-present adamws <adamws@users.noreply.github.com>
+#
+# SPDX-License-Identifier: MIT
 from typing import List, Optional
 
 import json
-import random
 from enum import Enum
 from pathlib import Path
 
 import typer
 from rich.console import Console
 
-from . import __version__, skidl
+from kle2netlist.skidl import build_circuit, generate_netlist
+from kle2netlist._version import __version__
 
 
 class Color(str, Enum):
@@ -96,7 +97,7 @@ def main(
 
     with open(layout) as f:
         json_layout = json.loads(f.read())
-        skidl.build_circuit(
+        build_circuit(
             json_layout,
             switch_library=switch_library,
             switch_footprint=switch_footprint,
@@ -104,9 +105,9 @@ def main(
             controller_circuit=controller_circuit,
         )
 
-    skidl.generate_netlist(str(output.joinpath(f"{name}.net")))
+    generate_netlist(str(output.joinpath(f"{name}.net")))
     if not no_xml:
-        skidl.generate_netlist(str(output.joinpath(f"{name}.xml")), "xml")
+        generate_netlist(str(output.joinpath(f"{name}.xml")), "xml")
 
 
 if __name__ == "__main__":

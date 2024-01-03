@@ -1,215 +1,47 @@
 # kle2netlist
 
-<div align="center">
+|         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ---     | ---                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| CI/CD   | [![CI - Main](https://github.com/adamws/kle2netlist/actions/workflows/build.yml/badge.svg)](https://github.com/adamws/kle2netlist/actions/workflows/build.yml) [![Coverage Status](https://coveralls.io/repos/github/adamws/kle2netlist/badge.svg?branch=master)](https://coveralls.io/github/adamws/kle2netlist?branch=master)                                                                                                                                                                                                                                                                                    |
+| Package | [![PyPI - Version](https://img.shields.io/pypi/v/kle2netlist.svg)](https://pypi.org/project/kle2netlist) [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/kle2netlist.svg)](https://pypi.org/project/kle2netlist)                                                                                                                                                                                                                                                                                                                                                                                  |
+| Meta    | [![Hatch project](https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-4051b5.svg)](https://github.com/pypa/hatch) [![linting - Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff) [![code style - Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black) [![types - Mypy](https://img.shields.io/badge/types-Mypy-blue.svg)](https://github.com/python/mypy) [![License - MIT](https://img.shields.io/badge/license-MIT-9400d3.svg)](https://spdx.org/licenses/) |
 
-[![Build status](https://github.com/adamws/kle2netlist/workflows/build/badge.svg?branch=master&event=push)](https://github.com/adamws/kle2netlist/actions?query=workflow%3Abuild)
-[![Python Version](https://img.shields.io/pypi/pyversions/kle2netlist.svg)](https://pypi.org/project/kle2netlist/)
-[![Dependencies Status](https://img.shields.io/badge/dependencies-up%20to%20date-brightgreen.svg)](https://github.com/adamws/kle2netlist/pulls?utf8=%E2%9C%93&q=is%3Apr%20author%3Aapp%2Fdependabot)
+-----
 
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Security: bandit](https://img.shields.io/badge/security-bandit-green.svg)](https://github.com/PyCQA/bandit)
-[![Pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/adamws/kle2netlist/blob/master/.pre-commit-config.yaml)
-[![Semantic Versions](https://img.shields.io/badge/%F0%9F%9A%80-semantic%20versions-informational.svg)](https://github.com/adamws/kle2netlist/releases)
-[![License](https://img.shields.io/github/license/adamws/kle2netlist)](https://github.com/adamws/kle2netlist/blob/master/LICENSE)
-
-KiCad netlist generator for mechanical keyboards
-</div>
+**KiCad netlist generator for mechanical keyboards**
 
 ## Installation
 
-```bash
+```
 pip install kle2netlist
 ```
 
-or install with `Poetry`
+## Usage
 
-```bash
-poetry add kle2netlist
 ```
+$ kle2netlist --help
 
-Then you can run
+ Usage: kle2netlist [OPTIONS]
 
-```bash
-kle2netlist --help
+ Generates KiCad netlist for a given keyboard layout json file.
+
+╭─ Options ────────────────────────────────────────────────────────────────────────╮
+│ *  --layout                        TEXT  Path to kle layout file [default: None] │
+│                                          [required]                              │
+│    --output-dir                    TEXT  Output directory, created if not        │
+│                                          existing                                │
+│                                          [default: .]                            │
+│    --name                          TEXT  Netlist name without file extension     │
+│                                          [default: keyboard]                     │
+│    --switch-library      -swl      TEXT  Switch library                          │
+│                                          [default:                               │
+│                                          perigoso/keyswitch-kicad-library]       │
+│    --switch-footprint    -swf      TEXT  Switch footprint [default: MX]          │
+│    --lib-path            -l        TEXT  Path to symbol library [default: None]  │
+│    --controller-circuit                  Add ATmega32U4-AU minimal circuitry     │
+│    --no-xml                              Skip xml netlist generation             │
+│    --version             -v              Prints the version of the kle2netlist   │
+│                                          package.                                │
+│    --help                                Show this message and exit.             │
+╰──────────────────────────────────────────────────────────────────────────────────╯
 ```
-
-or if installed with `Poetry`:
-
-```bash
-poetry run kle2netlist --help
-```
-
-### Makefile usage
-
-[`Makefile`](https://github.com/adamws/kle2netlist/blob/master/Makefile) contains many functions for fast assembling and convenient work.
-
-<details>
-<summary>1. Download Poetry</summary>
-<p>
-
-```bash
-make download-poetry
-```
-
-</p>
-</details>
-
-<details>
-<summary>2. Install all dependencies and pre-commit hooks</summary>
-<p>
-
-```bash
-make install
-```
-
-If you do not want to install pre-commit hooks, run the command with the NO_PRE_COMMIT flag:
-
-```bash
-make install NO_PRE_COMMIT=1
-```
-
-</p>
-</details>
-
-<details>
-<summary>3. Check the security of your code</summary>
-<p>
-
-```bash
-make check-safety
-```
-
-This command launches a `Poetry` and `Pip` integrity check as well as identifies security issues with `Safety` and `Bandit`. By default, the build will not crash if any of the items fail. But you can set `STRICT=1` for the entire build, or you can configure strictness for each item separately.
-
-```bash
-make check-safety STRICT=1
-```
-
-or only for `safety`:
-
-```bash
-make check-safety SAFETY_STRICT=1
-```
-
-multiple
-
-```bash
-make check-safety PIP_STRICT=1 SAFETY_STRICT=1
-```
-
-> List of flags for `check-safety` (can be set to `1` or `0`): `STRICT`, `POETRY_STRICT`, `PIP_STRICT`, `SAFETY_STRICT`, `BANDIT_STRICT`.
-
-</p>
-</details>
-
-<details>
-<summary>4. Check the codestyle</summary>
-<p>
-
-The command is similar to `check-safety` but to check the code style, obviously. It uses `Black`, `Darglint`, `Isort`, and `Mypy` inside.
-
-```bash
-make check-style
-```
-
-It may also contain the `STRICT` flag.
-
-```bash
-make check-style STRICT=1
-```
-
-> List of flags for `check-style` (can be set to `1` or `0`): `STRICT`, `BLACK_STRICT`, `DARGLINT_STRICT`, `ISORT_STRICT`, `MYPY_STRICT`.
-
-</p>
-</details>
-
-<details>
-<summary>5. Run all the codestyle formaters</summary>
-<p>
-
-Codestyle uses `pre-commit` hooks, so ensure you've run `make install` before.
-
-```bash
-make codestyle
-```
-
-</p>
-</details>
-
-<details>
-<summary>6. Run tests</summary>
-<p>
-
-```bash
-make test
-```
-
-</p>
-</details>
-
-<details>
-<summary>7. Run all the linters</summary>
-<p>
-
-```bash
-make lint
-```
-
-the same as:
-
-```bash
-make test && make check-safety && make check-style
-```
-
-> List of flags for `lint` (can be set to `1` or `0`): `STRICT`, `POETRY_STRICT`, `PIP_STRICT`, `SAFETY_STRICT`, `BANDIT_STRICT`, `BLACK_STRICT`, `DARGLINT_STRICT`, `ISORT_STRICT`, `MYPY_STRICT`.
-
-</p>
-</details>
-
-<details>
-<summary>8. Build docker</summary>
-<p>
-
-```bash
-make docker
-```
-
-which is equivalent to:
-
-```bash
-make docker VERSION=latest
-```
-
-More information [here](https://github.com/adamws/kle2netlist/tree/master/docker).
-
-</p>
-</details>
-
-<details>
-<summary>9. Cleanup docker</summary>
-<p>
-
-```bash
-make clean_docker
-```
-
-or to remove all build
-
-```bash
-make clean
-```
-
-More information [here](https://github.com/adamws/kle2netlist/tree/master/docker).
-
-</p>
-</details>
-
-## 🛡 License
-
-[![License](https://img.shields.io/github/license/adamws/kle2netlist)](https://github.com/adamws/kle2netlist/blob/master/LICENSE)
-
-This project is licensed under the terms of the `MIT` license. See [LICENSE](https://github.com/adamws/kle2netlist/blob/master/LICENSE) for more details.
-
-## Credits
-
-This project was generated with [`python-package-template`](https://github.com/TezRomacH/python-package-template).
