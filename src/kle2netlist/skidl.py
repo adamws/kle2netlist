@@ -226,6 +226,9 @@ def handle_switch_matrix(keys, switch_module, supported_widths):
             msg = "Key labels missing"
             raise RuntimeError(msg)
 
+        # be forgiving, remove all whitespaces to fix simple mistakes:
+        labels[0] = re.sub(r"\s+", "", str(labels[0]), flags=re.UNICODE)
+
         if not is_key_label_valid(labels[0]):
             msg = (
                 f"Key label invalid: '{labels[0]}' - "
