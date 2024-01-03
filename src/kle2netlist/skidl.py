@@ -147,9 +147,9 @@ def find_closest_smaller_or_equal(lst, target):
 
 def add_stabilizer(reference, key_width):
     # this function works only for perigoso/keyswitch-kicad-library
-    supported_stabilizer_size = SUPPORTED_LIBRARIES[
-        "perigoso/keyswitch-kicad-library"
-    ]["supported-stabilizers"]
+    supported_stabilizer_size = SUPPORTED_LIBRARIES["perigoso/keyswitch-kicad-library"][
+        "supported-stabilizers"
+    ]
     stabilizer_width = find_closest_smaller_or_equal(
         supported_stabilizer_size, key_width
     )
@@ -182,9 +182,7 @@ def add_iso_enter_switch(switch_module):
         module_name == "Switch_Keyboard_Cherry_MX"
         or module_name == "Switch_Keyboard_Hybrid"
     ):
-        stabilizer_footprint = (
-            "Mounting_Keyboard_Stabilizer:Stabilizer_Cherry_MX_2.00u"
-        )
+        stabilizer_footprint = "Mounting_Keyboard_Stabilizer:Stabilizer_Cherry_MX_2.00u"
         stabilizer = skidl.Part(
             "Mechanical", "MountingHole", footprint=stabilizer_footprint
         )

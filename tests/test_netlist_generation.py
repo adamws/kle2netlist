@@ -164,9 +164,7 @@ def test_layout_with_wrong_labels(labels):
         (10, "1.00u", ""),
     ],
 )
-def test_add_stabilizer(
-    width, expected_key, expected_stabilizer, request, tmpdir
-):
+def test_add_stabilizer(width, expected_key, expected_stabilizer, request, tmpdir):
     filename = request.module.__file__
     test_dir, _ = os.path.splitext(filename)
 

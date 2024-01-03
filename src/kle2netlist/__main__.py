@@ -33,9 +33,7 @@ console = Console()
 def version_callback(value: bool):
     """Prints the version of the package."""
     if value:
-        console.print(
-            f"[yellow]kle2netlist[/] version: [bold blue]{__version__}[/]"
-        )
+        console.print(f"[yellow]kle2netlist[/] version: [bold blue]{__version__}[/]")
         raise typer.Exit()
 
 
@@ -65,9 +63,7 @@ def main(
         "--controller-circuit",
         help="Add ATmega32U4-AU minimal circuitry",
     ),
-    no_xml: bool = typer.Option(
-        False, "--no-xml", help="Skip xml netlist generation"
-    ),
+    no_xml: bool = typer.Option(False, "--no-xml", help="Skip xml netlist generation"),
     version: bool = typer.Option(
         None,
         "-v",
