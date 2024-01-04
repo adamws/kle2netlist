@@ -8,9 +8,54 @@ import sys
 
 import skidl
 
+KISWITCH_LIBRARY_METADATA = {
+    "modules": {
+        "MX": {
+            "name": "Switch_Keyboard_Cherry_MX",
+            "footprint-nameformat": "SW_Cherry_MX_PCB_{:.2f}u",
+            "iso-enter": "SW_Cherry_MX_PCB_ISOEnter",
+        },
+        "Alps": {
+            "name": "Switch_Keyboard_Alps_Matias",
+            "footprint-nameformat": "SW_Alps_Matias_{:.2f}u",
+            "iso-enter": "SW_Alps_Matias_ISOEnter",
+        },
+        "MX/Alps Hybrid": {
+            "name": "Switch_Keyboard_Hybrid",
+            "footprint-nameformat": "SW_Hybrid_Cherry_MX_Alps_{:.2f}u",
+            "iso-enter": "SW_Hybrid_Cherry_MX_Alps_ISOEnter",
+        },
+    },
+    "supported-widths": [
+        1,
+        1.25,
+        1.5,
+        1.75,
+        2,
+        2.25,
+        2.5,
+        2.75,
+        3,
+        4,
+        4.5,
+        5.5,
+        6,
+        6.25,
+        6.5,
+        7,
+    ],
+    "supported-stabilizers": [
+        2,
+        3,
+        6,
+        6.25,
+        7,
+        8,
+    ],
+}
+
 SUPPORTED_LIBRARIES = {
     "ai03-2725/MX_Alps_Hybrid": {
-        "source": "https://github.com/ai03-2725/MX_Alps_Hybrid",
         "modules": {
             "MX": {
                 "name": "MX_Only",
@@ -48,52 +93,10 @@ SUPPORTED_LIBRARIES = {
         "supported-stabilizers": [],  # stabilizers are part of switch footprint
     },
     # tested with https://github.com/perigoso/keyswitch-kicad-library/releases/tag/v2.2
-    "perigoso/keyswitch-kicad-library": {
-        "source": "https://github.com/perigoso/keyswitch-kicad-library",
-        "modules": {
-            "MX": {
-                "name": "Switch_Keyboard_Cherry_MX",
-                "footprint-nameformat": "SW_Cherry_MX_PCB_{:.2f}u",
-                "iso-enter": "SW_Cherry_MX_PCB_ISOEnter",
-            },
-            "Alps": {
-                "name": "Switch_Keyboard_Alps_Matias",
-                "footprint-nameformat": "SW_Alps_Matias_{:.2f}u",
-                "iso-enter": "SW_Alps_Matias_ISOEnter",
-            },
-            "MX/Alps Hybrid": {
-                "name": "Switch_Keyboard_Hybrid",
-                "footprint-nameformat": "SW_Hybrid_Cherry_MX_Alps_{:.2f}u",
-                "iso-enter": "SW_Hybrid_Cherry_MX_Alps_ISOEnter",
-            },
-        },
-        "supported-widths": [
-            1,
-            1.25,
-            1.5,
-            1.75,
-            2,
-            2.25,
-            2.5,
-            2.75,
-            3,
-            4,
-            4.5,
-            5.5,
-            6,
-            6.25,
-            6.5,
-            7,
-        ],
-        "supported-stabilizers": [
-            2,
-            3,
-            6,
-            6.25,
-            7,
-            8,
-        ],
-    },
+    "perigoso/keyswitch-kicad-library": KISWITCH_LIBRARY_METADATA,
+    # perigoso library has been moved to new location:
+    # tested with https://github.com/kiswitch/keyswitch-kicad-library/releases/tag/v2.4
+    "kiswitch/keyswitch-kicad-library": KISWITCH_LIBRARY_METADATA,
 }
 
 ATMEGA32U4AU_PIN_ASSIGN_ORDER = [
