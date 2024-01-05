@@ -35,7 +35,7 @@ $ kle2netlist --help
 │                                          [default: keyboard]                     │
 │    --switch-library      -swl      TEXT  Switch library                          │
 │                                          [default:                               │
-│                                          perigoso/keyswitch-kicad-library]       │
+│                                          kiswitch/keyswitch-kicad-library]       │
 │    --switch-footprint    -swf      TEXT  Switch footprint [default: MX]          │
 │    --lib-path            -l        TEXT  Path to symbol library [default: None]  │
 │    --controller-circuit                  Add ATmega32U4-AU minimal circuitry     │

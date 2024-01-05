@@ -13,13 +13,10 @@ from kle2netlist._version import __version__
 from kle2netlist.skidl import build_circuit, generate_netlist
 
 
-class Color(str, Enum):
-    white = "white"
-    red = "red"
-    cyan = "cyan"
-    magenta = "magenta"
-    yellow = "yellow"
-    green = "green"
+class SwitchType(str, Enum):
+    mx = "MX"
+    alps = "Alps"
+    mx_alps_hybrid = "MX/Alps Hybrid"
 
 
 app = typer.Typer(
@@ -47,12 +44,12 @@ def main(
         "keyboard", "--name", help="Netlist name without file extension"
     ),
     switch_library: str = typer.Option(
-        "perigoso/keyswitch-kicad-library",
+        "kiswitch/keyswitch-kicad-library",
         "-swl",
         "--switch-library",
         help="Switch library",
     ),
-    switch_footprint: str = typer.Option(
+    switch_footprint: SwitchType = typer.Option(
         "MX", "-swf", "--switch-footprint", help="Switch footprint"
     ),
     lib_paths: Optional[List[str]] = typer.Option(
