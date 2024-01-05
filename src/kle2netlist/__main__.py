@@ -50,7 +50,10 @@ def main(
         help="Switch library",
     ),
     switch_footprint: SwitchType = typer.Option(
-        "MX", "-swf", "--switch-footprint", help="Switch footprint"
+        SwitchType.mx, "-swf", "--switch-footprint", help="Switch footprint"
+    ),
+    diode_footprint: str = typer.Option(
+        "D_SOD-323F", "-df", "--diode-footprint", help="Diode footprint"
     ),
     lib_paths: Optional[List[str]] = typer.Option(
         None, "-l", "--lib-path", help="Path to symbol library"
@@ -93,6 +96,7 @@ def main(
                 json_layout,
                 switch_library=switch_library,
                 switch_footprint=switch_footprint,
+                diode_footprint=diode_footprint,
                 additional_search_path=lib_paths,
                 controller_circuit=controller_circuit,
             )

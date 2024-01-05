@@ -167,7 +167,7 @@ def add_stabilizer(reference, key_width):
         stabilizer.ref = reference
 
 
-def add_iso_enter_switch(switch_module):
+def add_iso_enter_switch(switch_module, diode_footprint):
     module_name = switch_module["name"]
 
     try:
@@ -179,7 +179,7 @@ def add_iso_enter_switch(switch_module):
     switch_footprint = f"{module_name}:{switch_footprint}"
 
     switch = skidl.Part("Switch", "SW_Push", footprint=switch_footprint)
-    diode = skidl.Part("Device", "D", footprint="Diode_SMD:D_SOD-323F")
+    diode = skidl.Part("Device", "D", footprint=f"Diode_SMD:{diode_footprint}")
 
     if module_name in ["Switch_Keyboard_Cherry_MX", "Switch_Keyboard_Hybrid"]:
         stabilizer_footprint = "Mounting_Keyboard_Stabilizer:Stabilizer_Cherry_MX_2.00u"
@@ -192,7 +192,7 @@ def add_iso_enter_switch(switch_module):
     return switch, diode
 
 
-def add_regular_switch(switch_module, key_width):
+def add_regular_switch(switch_module, key_width, diode_footprint):
     footprint_format = switch_module["footprint-nameformat"]
     module_name = switch_module["name"]
 
@@ -200,7 +200,7 @@ def add_regular_switch(switch_module, key_width):
     switch_footprint = f"{module_name}:{switch_footprint}"
 
     switch = skidl.Part("Switch", "SW_Push", footprint=switch_footprint)
-    diode = skidl.Part("Device", "D", footprint="Diode_SMD:D_SOD-323F")
+    diode = skidl.Part("Device", "D", footprint=f"Diode_SMD:{diode_footprint}")
 
     if (
         module_name in ["Switch_Keyboard_Cherry_MX", "Switch_Keyboard_Hybrid"]
@@ -219,7 +219,7 @@ def is_key_label_valid(label):
         return False
 
 
-def handle_switch_matrix(keys, switch_module, supported_widths):
+def handle_switch_matrix(keys, switch_module, supported_widths, diode_footprint):
     rows = {}
     columns = {}
 
@@ -247,11 +247,13 @@ def handle_switch_matrix(keys, switch_module, supported_widths):
             columns[column] = skidl.Net(f"COL{column}")
 
         if is_iso_enter(key):
-            switch, diode = add_iso_enter_switch(switch_module)
+            switch, diode = add_iso_enter_switch(switch_module, diode_footprint)
         else:
             key_width = float(key["width"])
             switch, diode = add_regular_switch(
-                switch_module, key_width if key_width in supported_widths else 1
+                switch_module,
+                key_width if key_width in supported_widths else 1,
+                diode_footprint,
             )
 
         rows[row] += diode[1]
@@ -414,6 +416,7 @@ def build_circuit(layout, **kwargs):
         library = SUPPORTED_LIBRARIES[switch_library]
 
         switch_footprint = kwargs.get("switch_footprint")
+        diode_footprint = kwargs.get("diode_footprint")
         switch_module = library["modules"][switch_footprint]
         supported_widths = library["supported-widths"]
 
@@ -422,7 +425,7 @@ def build_circuit(layout, **kwargs):
         raise RuntimeError(msg) from err
 
     rows, columns = handle_switch_matrix(
-        layout["keys"], switch_module, supported_widths
+        layout["keys"], switch_module, supported_widths, diode_footprint
     )
 
     if kwargs.get("controller_circuit"):

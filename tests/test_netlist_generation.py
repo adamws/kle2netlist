@@ -95,6 +95,7 @@ def test_netlist_generation(
         layout,
         switch_library=switch_library,
         switch_footprint=switch_footprint,
+        diode_footprint="D_SOD-323F",
         controller_circuit=controller_circuit,
     )
     generate_netlist(result_netlist_path)
@@ -136,6 +137,7 @@ def test_layout_with_wrong_labels(labels):
             layout,
             switch_library="ai03-2725/MX_Alps_Hybrid",
             switch_footprint="MX",
+            diode_footprint="D_SOD-323F",
             controller_circuit=False,
         )
 
@@ -190,6 +192,7 @@ def test_add_stabilizer(width, expected_key, expected_stabilizer, request, tmpdi
         layout,
         switch_library="perigoso/keyswitch-kicad-library",
         switch_footprint="MX",
+        diode_footprint="D_SOD-323F",
         controller_circuit=False,
     )
     generate_netlist(result_netlist_path)

@@ -21,27 +21,20 @@ pip install kle2netlist
 ```
 $ kle2netlist --help
 
- Usage: kle2netlist [OPTIONS]
+Usage: kle2netlist [OPTIONS]
 
- Generates KiCad netlist for a given keyboard layout json file.
+Generates KiCad netlist for a given keyboard layout json file.
 
-╭─ Options ────────────────────────────────────────────────────────────────────────╮
-│ *  --layout                        PATH  Path to kle layout file [default: None] │
-│                                          [required]                              │
-│    --output-dir                    PATH  Output directory, created if not        │
-│                                          existing                                │
-│                                          [default: .]                            │
-│    --name                          TEXT  Netlist name without file extension     │
-│                                          [default: keyboard]                     │
-│    --switch-library      -swl      TEXT  Switch library                          │
-│                                          [default:                               │
-│                                          kiswitch/keyswitch-kicad-library]       │
-│    --switch-footprint    -swf      TEXT  Switch footprint [default: MX]          │
-│    --lib-path            -l        TEXT  Path to symbol library [default: None]  │
-│    --controller-circuit                  Add ATmega32U4-AU minimal circuitry     │
-│    --no-xml                              Skip xml netlist generation             │
-│    --version             -v              Prints the version of the kle2netlist   │
-│                                          package.                                │
-│    --help                                Show this message and exit.             │
-╰──────────────────────────────────────────────────────────────────────────────────╯
+Options
+--layout                    Path to kle layout file [default: None] [required]
+--output-dir                Output directory, created if not existing [default: .]
+--name                      Netlist name without file extension [default: keyboard]
+--switch-library -swl       Switch library [default: kiswitch/keyswitch-kicad-library]
+--switch-footprint -swf     Switch footprint [default: MX]
+--diode-footprint -df       Diode footprint [default: D_SOD-323F]
+--lib-path -l               Path to symbol library [default: None]
+--controller-circuit        Add ATmega32U4-AU minimal circuitry
+--no-xml                    Skip xml netlist generation
+--version -v                Prints the version of the kle2netlist package.
+--help                      Show this message and exit.
 ```
