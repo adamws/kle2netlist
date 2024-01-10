@@ -25,6 +25,11 @@ KISWITCH_LIBRARY_METADATA = {
             "footprint-nameformat": "SW_Hybrid_Cherry_MX_Alps_{:.2f}u",
             "iso-enter": "SW_Hybrid_Cherry_MX_Alps_ISOEnter",
         },
+        "Hotswap Kailh MX": {
+            "name": "Switch_Keyboard_Hotswap_Kailh",
+            "footprint-nameformat": "SW_Hotswap_Kailh_MX_{:.2f}u",
+            "iso-enter": "SW_Hotswap_Kailh_MX_ISOEnter",
+        }
     },
     "supported-widths": [
         1,

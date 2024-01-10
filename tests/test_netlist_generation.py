@@ -29,6 +29,9 @@ REFERENCE_TEMPLATE_DICT = {
         "MX/Alps Hybrid": {
             "switch_footprint_1u": "Switch_Keyboard_Hybrid:SW_Hybrid_Cherry_MX_Alps_1.00u"
         },
+        "Hotswap Kailh MX": {
+            "switch_footprint_1u": "Switch_Keyboard_Hotswap_Kailh:SW_Hotswap_Kailh_MX_1.00u"
+        },
     },
 }
 
@@ -60,6 +63,7 @@ def assert_netlist(netlist_template, result_file, template_dict):
         ("2x2", "perigoso/keyswitch-kicad-library", "MX", False),
         ("2x2", "perigoso/keyswitch-kicad-library", "Alps", False),
         ("2x2", "perigoso/keyswitch-kicad-library", "MX/Alps Hybrid", False),
+        ("2x2", "perigoso/keyswitch-kicad-library", "Hotswap Kailh MX", False),
         ("iso-enter", "perigoso/keyswitch-kicad-library", "MX", False),
         ("empty", "ai03-2725/MX_Alps_Hybrid", "MX", True),
         ("empty", "perigoso/keyswitch-kicad-library", "MX", True),
