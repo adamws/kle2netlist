@@ -8,102 +8,6 @@ import sys
 
 import skidl
 
-KISWITCH_LIBRARY_METADATA = {
-    "modules": {
-        "MX": {
-            "name": "Switch_Keyboard_Cherry_MX",
-            "footprint-nameformat": "SW_Cherry_MX_PCB_{:.2f}u",
-            "iso-enter": "SW_Cherry_MX_PCB_ISOEnter",
-        },
-        "Alps": {
-            "name": "Switch_Keyboard_Alps_Matias",
-            "footprint-nameformat": "SW_Alps_Matias_{:.2f}u",
-            "iso-enter": "SW_Alps_Matias_ISOEnter",
-        },
-        "MX/Alps Hybrid": {
-            "name": "Switch_Keyboard_Hybrid",
-            "footprint-nameformat": "SW_Hybrid_Cherry_MX_Alps_{:.2f}u",
-            "iso-enter": "SW_Hybrid_Cherry_MX_Alps_ISOEnter",
-        },
-        "Hotswap Kailh MX": {
-            "name": "Switch_Keyboard_Hotswap_Kailh",
-            "footprint-nameformat": "SW_Hotswap_Kailh_MX_{:.2f}u",
-            "iso-enter": "SW_Hotswap_Kailh_MX_ISOEnter",
-        }
-    },
-    "supported-widths": [
-        1,
-        1.25,
-        1.5,
-        1.75,
-        2,
-        2.25,
-        2.5,
-        2.75,
-        3,
-        4,
-        4.5,
-        5.5,
-        6,
-        6.25,
-        6.5,
-        7,
-    ],
-    "supported-stabilizers": [
-        2,
-        3,
-        6,
-        6.25,
-        7,
-        8,
-    ],
-}
-
-SUPPORTED_LIBRARIES = {
-    "ai03-2725/MX_Alps_Hybrid": {
-        "modules": {
-            "MX": {
-                "name": "MX_Only",
-                "footprint-nameformat": "MXOnly-{:g}U-NoLED",
-                "iso-enter": "MXOnly-ISO",
-            },
-            "Alps": {
-                "name": "Alps_Only",
-                "footprint-nameformat": "ALPS-{:g}U",
-            },
-            "MX/Alps Hybrid": {
-                "name": "MX_Alps_Hybrid",
-                "footprint-nameformat": "MX-{:g}U-NoLED",
-                "iso-enter": "MX-ISO",
-            },
-        },
-        "supported-widths": [
-            1,
-            1.25,
-            1.5,
-            1.75,
-            2,
-            2.25,
-            2.5,
-            2.75,
-            3,
-            6,
-            6.25,
-            6.5,
-            7,
-            8,
-            9,
-            10,
-        ],
-        "supported-stabilizers": [],  # stabilizers are part of switch footprint
-    },
-    # tested with https://github.com/perigoso/keyswitch-kicad-library/releases/tag/v2.2
-    "perigoso/keyswitch-kicad-library": KISWITCH_LIBRARY_METADATA,
-    # perigoso library has been moved to new location:
-    # tested with https://github.com/kiswitch/keyswitch-kicad-library/releases/tag/v2.4
-    "kiswitch/keyswitch-kicad-library": KISWITCH_LIBRARY_METADATA,
-}
-
 ATMEGA32U4AU_PIN_ASSIGN_ORDER = [
     "PB0",
     "PB1",
@@ -153,66 +57,66 @@ def find_closest_smaller_or_equal(lst, target):
         return lst[index - 1]
 
 
-def add_stabilizer(reference, key_width):
-    # this function works only for perigoso/keyswitch-kicad-library
-    supported_stabilizer_size = SUPPORTED_LIBRARIES["perigoso/keyswitch-kicad-library"][
-        "supported-stabilizers"
-    ]
-    stabilizer_width = find_closest_smaller_or_equal(
-        supported_stabilizer_size, key_width
-    )
+def add_stabilizer(reference, stabilizer_footprint, key_width):
+    supported_stabilizers = [2, 3, 6, 6.25, 7, 8]
+    stabilizer_width = find_closest_smaller_or_equal(supported_stabilizers, key_width)
 
     if stabilizer_width:
-        stabilizer_footprint = (
-            f"Mounting_Keyboard_Stabilizer:Stabilizer_Cherry_MX_{stabilizer_width:.2f}u"
-        )
+        stabilizer_footprint = f"{stabilizer_footprint}".format(stabilizer_width)
         stabilizer = skidl.Part(
             "Mechanical", "MountingHole", footprint=stabilizer_footprint
         )
         stabilizer.ref = reference
 
 
-def add_iso_enter_switch(switch_module, diode_footprint):
-    module_name = switch_module["name"]
-
-    try:
-        switch_footprint = switch_module["iso-enter"]
-    except KeyError:
-        footprint_format = switch_module["footprint-nameformat"]
-        switch_footprint = f"{footprint_format}".format(1)
-
-    switch_footprint = f"{module_name}:{switch_footprint}"
+def add_iso_enter_switch(switch_footprint, diode_footprint, stabilizer_footprint):
+    # use 1u switch, do not bother with detection of dedicated ISO key which
+    # name is library dependent (and it is not passed via CLI yet)
+    switch_footprint = f"{switch_footprint}".format(1)
 
     switch = skidl.Part("Switch", "SW_Push", footprint=switch_footprint)
-    diode = skidl.Part("Device", "D", footprint=f"Diode_SMD:{diode_footprint}")
+    diode = skidl.Part("Device", "D", footprint=diode_footprint)
 
-    if module_name in ["Switch_Keyboard_Cherry_MX", "Switch_Keyboard_Hybrid"]:
-        stabilizer_footprint = "Mounting_Keyboard_Stabilizer:Stabilizer_Cherry_MX_2.00u"
-        stabilizer = skidl.Part(
-            "Mechanical", "MountingHole", footprint=stabilizer_footprint
-        )
-        switch_reference_number = switch.ref[2:]
-        stabilizer.ref = f"ST{switch_reference_number}"
+    switch_reference_number = switch.ref[2:]
+    add_stabilizer(f"ST{switch_reference_number}", stabilizer_footprint, 2)
 
     return switch, diode
 
 
-def add_regular_switch(switch_module, key_width, diode_footprint):
-    footprint_format = switch_module["footprint-nameformat"]
-    module_name = switch_module["name"]
+def add_regular_switch(
+    switch_footprint, key_width, diode_footprint, stabilizer_footprint
+):
+    # probably should use some searching to see if given footprint exist,
+    # for now just assume that any library supports following widths:
+    supported_widths = [
+        1,
+        1.25,
+        1.5,
+        1.75,
+        2,
+        2.25,
+        2.5,
+        2.75,
+        3,
+        4,
+        4.5,
+        5.5,
+        6,
+        6.25,
+        6.5,
+        7,
+    ]
+    if key_width not in supported_widths:
+        key_width = 1
 
-    switch_footprint = f"{footprint_format}".format(key_width)
-    switch_footprint = f"{module_name}:{switch_footprint}"
+    switch_footprint = f"{switch_footprint}".format(key_width)
 
     switch = skidl.Part("Switch", "SW_Push", footprint=switch_footprint)
-    diode = skidl.Part("Device", "D", footprint=f"Diode_SMD:{diode_footprint}")
+    diode = skidl.Part("Device", "D", footprint=diode_footprint)
 
-    if (
-        module_name in ["Switch_Keyboard_Cherry_MX", "Switch_Keyboard_Hybrid"]
-        and key_width >= 2
-    ):
+    if stabilizer_footprint and key_width >= 2:
         switch_reference_number = switch.ref[2:]
-        add_stabilizer(f"ST{switch_reference_number}", key_width)
+        add_stabilizer(f"ST{switch_reference_number}", stabilizer_footprint, key_width)
 
     return switch, diode
 
@@ -224,7 +128,7 @@ def is_key_label_valid(label):
         return False
 
 
-def handle_switch_matrix(keys, switch_module, supported_widths, diode_footprint):
+def handle_switch_matrix(keys, switch_footprint, diode_footprint, stabilizer_footprint):
     rows = {}
     columns = {}
 
@@ -252,13 +156,13 @@ def handle_switch_matrix(keys, switch_module, supported_widths, diode_footprint)
             columns[column] = skidl.Net(f"COL{column}")
 
         if is_iso_enter(key):
-            switch, diode = add_iso_enter_switch(switch_module, diode_footprint)
+            switch, diode = add_iso_enter_switch(
+                switch_footprint, diode_footprint, stabilizer_footprint
+            )
         else:
             key_width = float(key["width"])
             switch, diode = add_regular_switch(
-                switch_module,
-                key_width if key_width in supported_widths else 1,
-                diode_footprint,
+                switch_footprint, key_width, diode_footprint, stabilizer_footprint
             )
 
         rows[row] += diode[1]
@@ -417,20 +321,16 @@ def build_circuit(layout, **kwargs):
     skidl.lib_search_paths[skidl.KICAD].append(default_search_path)
 
     try:
-        switch_library = kwargs.get("switch_library")
-        library = SUPPORTED_LIBRARIES[switch_library]
-
         switch_footprint = kwargs.get("switch_footprint")
+        stabilizer_footprint = kwargs.get("stabilizer_footprint")
         diode_footprint = kwargs.get("diode_footprint")
-        switch_module = library["modules"][switch_footprint]
-        supported_widths = library["supported-widths"]
 
     except KeyError as err:
         msg = "Unsupported argument"
         raise RuntimeError(msg) from err
 
     rows, columns = handle_switch_matrix(
-        layout["keys"], switch_module, supported_widths, diode_footprint
+        layout["keys"], switch_footprint, diode_footprint, stabilizer_footprint
     )
 
     if kwargs.get("controller_circuit"):

@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: MIT
 import json
-from enum import Enum
 from pathlib import Path
 from typing import List, Optional
 
@@ -11,13 +10,6 @@ from rich.console import Console
 
 from kle2netlist._version import __version__
 from kle2netlist.skidl import build_circuit, generate_netlist
-
-
-class SwitchType(str, Enum):
-    mx = "MX"
-    alps = "Alps"
-    mx_alps_hybrid = "MX/Alps Hybrid"
-
 
 app = typer.Typer(
     name="kle2netlist",
@@ -43,17 +35,20 @@ def main(
     name: str = typer.Option(
         "keyboard", "--name", help="Netlist name without file extension"
     ),
-    switch_library: str = typer.Option(
-        "kiswitch/keyswitch-kicad-library",
-        "-swl",
-        "--switch-library",
-        help="Switch library",
+    switch_footprint: str = typer.Option(
+        "PCM_Switch_Keyboard_Cherry_MX:SW_Cherry_MX_PCB_{:.2f}u",
+        "-swf",
+        "--switch-footprint",
+        help="Switch footprint f-string",
     ),
-    switch_footprint: SwitchType = typer.Option(
-        SwitchType.mx, "-swf", "--switch-footprint", help="Switch footprint"
+    stabilizer_footprint: str = typer.Option(
+        "PCM_Mounting_Keyboard_Stabilizer:Stabilizer_Cherry_MX_{:.2f}u",
+        "-stf",
+        "--stabilizer-footprint",
+        help="Stabilizer footprint f-string, optional",
     ),
     diode_footprint: str = typer.Option(
-        "D_SOD-323F", "-df", "--diode-footprint", help="Diode footprint"
+        "Diode_SMD:D_SOD-123F", "-df", "--diode-footprint", help="Diode footprint"
     ),
     lib_paths: Optional[List[str]] = typer.Option(
         None, "-l", "--lib-path", help="Path to symbol library"
@@ -94,8 +89,8 @@ def main(
             json_layout = json.loads(f.read())
             build_circuit(
                 json_layout,
-                switch_library=switch_library,
                 switch_footprint=switch_footprint,
+                stabilizer_footprint=stabilizer_footprint,
                 diode_footprint=diode_footprint,
                 additional_search_path=lib_paths,
                 controller_circuit=controller_circuit,

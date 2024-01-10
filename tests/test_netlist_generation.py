@@ -10,31 +10,6 @@ import pytest
 
 from kle2netlist.skidl import build_circuit, generate_netlist
 
-# reference dicts
-REFERENCE_TEMPLATE_DICT = {
-    "ai03-2725/MX_Alps_Hybrid": {
-        "MX": {"switch_footprint_1u": "MX_Only:MXOnly-1U-NoLED"},
-        "Alps": {"switch_footprint_1u": "Alps_Only:ALPS-1U"},
-        "MX/Alps Hybrid": {"switch_footprint_1u": "MX_Alps_Hybrid:MX-1U-NoLED"},
-    },
-    "perigoso/keyswitch-kicad-library": {
-        "MX": {
-            "switch_footprint_1u": "Switch_Keyboard_Cherry_MX:SW_Cherry_MX_PCB_1.00u",
-            "switch_footprint_iso_enter": "Switch_Keyboard_Cherry_MX:SW_Cherry_MX_PCB_ISOEnter",
-            "stabilizer_footprint_2u": "Mounting_Keyboard_Stabilizer:Stabilizer_Cherry_MX_2.00u",
-        },
-        "Alps": {
-            "switch_footprint_1u": "Switch_Keyboard_Alps_Matias:SW_Alps_Matias_1.00u"
-        },
-        "MX/Alps Hybrid": {
-            "switch_footprint_1u": "Switch_Keyboard_Hybrid:SW_Hybrid_Cherry_MX_Alps_1.00u"
-        },
-        "Hotswap Kailh MX": {
-            "switch_footprint_1u": "Switch_Keyboard_Hotswap_Kailh:SW_Hotswap_Kailh_MX_1.00u"
-        },
-    },
-}
-
 
 def assert_netlist(netlist_template, result_file, template_dict):
     with open(netlist_template) as f:
@@ -55,26 +30,16 @@ def assert_netlist(netlist_template, result_file, template_dict):
 
 
 @pytest.mark.parametrize(
-    ("layout_id", "switch_library", "switch_footprint", "controller_circuit"),
+    ("layout_id", "controller_circuit"),
     [
-        ("2x2", "ai03-2725/MX_Alps_Hybrid", "MX", False),
-        ("2x2", "ai03-2725/MX_Alps_Hybrid", "Alps", False),
-        ("2x2", "ai03-2725/MX_Alps_Hybrid", "MX/Alps Hybrid", False),
-        ("2x2", "perigoso/keyswitch-kicad-library", "MX", False),
-        ("2x2", "perigoso/keyswitch-kicad-library", "Alps", False),
-        ("2x2", "perigoso/keyswitch-kicad-library", "MX/Alps Hybrid", False),
-        ("2x2", "perigoso/keyswitch-kicad-library", "Hotswap Kailh MX", False),
-        ("iso-enter", "perigoso/keyswitch-kicad-library", "MX", False),
-        ("empty", "ai03-2725/MX_Alps_Hybrid", "MX", True),
-        ("empty", "perigoso/keyswitch-kicad-library", "MX", True),
-        ("2x2", "ai03-2725/MX_Alps_Hybrid", "MX", True),
-        ("2x2", "perigoso/keyswitch-kicad-library", "MX", True),
+        ("2x2", False),
+        ("2x2", True),
+        ("iso-enter", False),
+        ("empty", True),
     ],
 )
 def test_netlist_generation(
     layout_id,
-    switch_library,
-    switch_footprint,
     controller_circuit,
     tmpdir,
     request,
@@ -97,14 +62,51 @@ def test_netlist_generation(
 
     build_circuit(
         layout,
-        switch_library=switch_library,
-        switch_footprint=switch_footprint,
-        diode_footprint="D_SOD-323F",
+        switch_footprint="PCM_lib1:SW_{:.2f}u",
+        stabilizer_footprint="PCM_lib2:ST_{:.2f}u",
+        diode_footprint="Diode_SMD:D_SOD-323F",
         controller_circuit=controller_circuit,
     )
     generate_netlist(result_netlist_path)
 
-    template_dict = REFERENCE_TEMPLATE_DICT[switch_library][switch_footprint]
+    template_dict = {
+        "switch_footprint_1u": "PCM_lib1:SW_1.00u",
+        "switch_footprint_iso_enter": "PCM_lib1:SW_1.00u",  # dedicated ISO enters not used
+        "stabilizer_footprint_2u": "PCM_lib2:ST_2.00u",
+    }
+    assert_netlist(
+        str(tmpdir.join(netlist_template)), result_netlist_path, template_dict
+    )
+
+
+def test_no_fstring_footprint(tmpdir, request):
+    filename = request.module.__file__
+    test_dir, _ = os.path.splitext(filename)
+    layout_id = "2x2"
+
+    layout_filename = f"{layout_id}.json"
+    netlist_template = f"{layout_id}.net"
+
+    if os.path.isdir(test_dir):
+        shutil.copy(f"{test_dir}/{layout_filename}", str(tmpdir))
+        shutil.copy(f"{test_dir}/{netlist_template}", str(tmpdir))
+
+    with open(tmpdir.join(layout_filename)) as f:
+        layout = json.loads(f.read())
+
+    result_netlist_path = str(tmpdir.join("test.net"))
+    build_circuit(
+        layout,
+        switch_footprint="PCM_lib1:SW",
+        stabilizer_footprint="",
+        diode_footprint="Diode_SMD:D_SOD-323F",
+        controller_circuit=False,
+    )
+    generate_netlist(result_netlist_path)
+
+    template_dict = {
+        "switch_footprint_1u": "PCM_lib1:SW",
+    }
     assert_netlist(
         str(tmpdir.join(netlist_template)), result_netlist_path, template_dict
     )
@@ -139,9 +141,9 @@ def test_layout_with_wrong_labels(labels):
     with pytest.raises(RuntimeError, match="Key label invalid"):
         build_circuit(
             layout,
-            switch_library="ai03-2725/MX_Alps_Hybrid",
-            switch_footprint="MX",
-            diode_footprint="D_SOD-323F",
+            switch_footprint="PCM_lib1:SW_{:.2f}u",
+            stabilizer_footprint="PCM_lib2:ST_{:.2f}u",
+            diode_footprint="Diode_SMD:D_SOD-323F",
             controller_circuit=False,
         )
 
@@ -194,19 +196,17 @@ def test_add_stabilizer(width, expected_key, expected_stabilizer, request, tmpdi
     result_netlist_path = str(tmpdir.join("test.net"))
     build_circuit(
         layout,
-        switch_library="perigoso/keyswitch-kicad-library",
-        switch_footprint="MX",
-        diode_footprint="D_SOD-323F",
+        switch_footprint="PCM_lib1:SW_{:.2f}u",
+        stabilizer_footprint="PCM_lib2:ST_{:.2f}u",
+        diode_footprint="Diode_SMD:D_SOD-323F",
         controller_circuit=False,
     )
     generate_netlist(result_netlist_path)
     template_dict = {
-        "switch_footprint": f"Switch_Keyboard_Cherry_MX:SW_Cherry_MX_PCB_{expected_key}",
+        "switch_footprint": f"PCM_lib1:SW_{expected_key}",
     }
     if expected_stabilizer:
-        template_dict[
-            "stabilizer_footprint"
-        ] = f"Mounting_Keyboard_Stabilizer:Stabilizer_Cherry_MX_{expected_stabilizer}"
+        template_dict["stabilizer_footprint"] = f"PCM_lib2:ST_{expected_stabilizer}"
 
     assert_netlist(
         str(tmpdir.join(netlist_template)), result_netlist_path, template_dict
