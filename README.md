@@ -29,9 +29,9 @@ Options
 --layout                    Path to kle layout file [default: None] [required]
 --output-dir                Output directory, created if not existing [default: .]
 --name                      Netlist name without file extension [default: keyboard]
---switch-library -swl       Switch library [default: kiswitch/keyswitch-kicad-library]
---switch-footprint -swf     Switch footprint [default: MX]
---diode-footprint -df       Diode footprint [default: D_SOD-323F]
+--switch-footprint -swf     Switch footprint f-string [default: PCM_Switch_Keyboard_Cherry_MX:SW_Cherry_MX_PCB_{:.2f}u]
+--stabilizer-footprint -stf Stabilizer footprint [default: PCM_Mounting_Keyboard_Stabilizer:Stabilizer_Cherry_MX_{:.2f}u]
+--diode-footprint -df       Diode footprint [default: Diode_SMD:D_SOD-123F]
 --lib-path -l               Path to symbol library [default: None]
 --controller-circuit        Add ATmega32U4-AU minimal circuitry
 --no-xml                    Skip xml netlist generation
