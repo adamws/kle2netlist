@@ -1,4 +1,4 @@
 [submodule "kicad-symbols"]
 	path = src/kle2netlist/data/kicad-symbols
 	url = https://gitlab.com/kicad/libraries/kicad-symbols
-	branch = v6
+	branch = v8

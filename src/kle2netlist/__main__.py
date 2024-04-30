@@ -30,10 +30,7 @@ def version_callback(value: bool):
 def main(
     layout: Path = typer.Option(..., help="Path to kle layout file"),
     output: Path = typer.Option(
-        ".", "--output-dir", help="Output directory, created if not existing"
-    ),
-    name: str = typer.Option(
-        "keyboard", "--name", help="Netlist name without file extension"
+        "keyboard.net", "--output", help="Output netlist file"
     ),
     switch_footprint: str = typer.Option(
         "PCM_Switch_Keyboard_Cherry_MX:SW_Cherry_MX_PCB_{:.2f}u",
@@ -58,7 +55,6 @@ def main(
         "--controller-circuit",
         help="Add ATmega32U4-AU minimal circuitry",
     ),
-    no_xml: bool = typer.Option(False, "--no-xml", help="Skip xml netlist generation"),
     version: bool = typer.Option(
         None,
         "-v",
@@ -72,11 +68,9 @@ def main(
 
     if output.is_file():
         console.print(
-            f"[red]error:[/] --output-directory pointing to an existing file: [bold]{output}[/]"
+            f"[red]error:[/] --output pointing to an existing file: [bold]{output}[/]"
         )
         raise typer.Exit(code=1)
-
-    output.mkdir(exist_ok=True, parents=True)
 
     if not Path(layout).is_file():
         console.print(
@@ -96,9 +90,7 @@ def main(
                 controller_circuit=controller_circuit,
             )
 
-        generate_netlist(str(output.joinpath(f"{name}.net")))
-        if not no_xml:
-            generate_netlist(str(output.joinpath(f"{name}.xml")), "xml")
+        generate_netlist(output)
     except RuntimeError as e:
         console.print(f"[red]error:[/] [bold]{e}[/]")
         raise typer.Exit(code=1)

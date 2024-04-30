@@ -230,7 +230,7 @@ def add_controller_atmega32u4_au_v1():
     # usb
     usb = skidl.Part(
         "Connector",
-        "USB_C_Receptacle_USB2.0",
+        "USB_C_Receptacle_USB2.0_14P",
         footprint="Connector_USB:USB_C_Receptacle_XKB_U262-16XN-4BVC11",
     )
     esd_protection = skidl.Part(
@@ -305,20 +305,21 @@ def add_controller_circuit(variant, rows, columns):
 
 def build_circuit(layout, **kwargs):
     default_circuit.reset()
+    skidl.set_default_tool(skidl.KICAD8)
     additional_search_path = kwargs.get("additional_search_path")
     if additional_search_path:
         for path in additional_search_path:
             skidl.lib_search_paths[skidl.KICAD].append(path)
 
     # try using bundled symbols as fallback:
-    if sys.version_info[1] == 10:
+    if sys.version_info[1] >= 10:
         with importlib.resources.path("kle2netlist", "data") as p:
             default_search_path = p.joinpath("kicad-symbols")
     else:
         # for python <3.9 you can't use directory as resource:
         with importlib.resources.path("kle2netlist", "skidl.py") as p:
             default_search_path = p.parent.joinpath("data/kicad-symbols")
-    skidl.lib_search_paths[skidl.KICAD].append(default_search_path)
+    skidl.lib_search_paths[skidl.KICAD8].append(default_search_path)
 
     try:
         switch_footprint = kwargs.get("switch_footprint")
@@ -337,14 +338,8 @@ def build_circuit(layout, **kwargs):
         add_controller_circuit("atmega32u4_au_v1", rows, columns)
 
 
-def generate_netlist(output, netlist_type="net"):
-    if netlist_type == "net":
-        skidl.generate_netlist(file_=output)
-    elif netlist_type == "xml":
-        skidl.generate_xml(file_=output)
-    else:
-        msg = f"Unsupported netlist type: {netlist_type}"
-        raise RuntimeError(msg)
+def generate_netlist(output):
+    skidl.generate_netlist(file_=str(output))
 
 
 __all__ = ["build_circuit", "generate_netlist"]

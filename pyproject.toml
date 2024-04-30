@@ -22,13 +22,17 @@ classifiers = [
 dependencies = [
   "typer[all]>=0.9",
   "rich",
-  "skidl===1.0.0",
+  # pin to some recent revision from development branch
+  "skidl @ git+https://github.com/devbisme/skidl@12197f9042805952f39b468ff464dfc503a9b3c4",
 ]
 
 [project.urls]
 Documentation = "https://github.com/adamws/kle2netlist#readme"
 Issues = "https://github.com/adamws/kle2netlist/issues"
 Source = "https://github.com/adamws/kle2netlist"
+
+[tool.hatch.metadata]
+allow-direct-references = true
 
 [tool.hatch.version]
 source = "vcs"
