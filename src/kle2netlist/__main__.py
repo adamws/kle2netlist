@@ -79,7 +79,7 @@ def main(
         raise typer.Exit(code=1)
 
     try:
-        with open(layout) as f:
+        with open(layout, encoding="utf8") as f:
             json_layout = json.loads(f.read())
             build_circuit(
                 json_layout,
