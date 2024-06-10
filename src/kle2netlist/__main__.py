@@ -1,7 +1,6 @@
 # SPDX-FileCopyrightText: 2021-present adamws <adamws@users.noreply.github.com>
 #
 # SPDX-License-Identifier: MIT
-import json
 from pathlib import Path
 from typing import List, Optional
 
@@ -79,16 +78,14 @@ def main(
         raise typer.Exit(code=1)
 
     try:
-        with open(layout, encoding="utf8") as f:
-            json_layout = json.loads(f.read())
-            build_circuit(
-                json_layout,
-                switch_footprint=switch_footprint,
-                stabilizer_footprint=stabilizer_footprint,
-                diode_footprint=diode_footprint,
-                additional_search_path=lib_paths,
-                controller_circuit=controller_circuit,
-            )
+        build_circuit(
+            layout,
+            switch_footprint=switch_footprint,
+            stabilizer_footprint=stabilizer_footprint,
+            diode_footprint=diode_footprint,
+            additional_search_path=lib_paths,
+            controller_circuit=controller_circuit,
+        )
 
         generate_netlist(output)
     except RuntimeError as e:

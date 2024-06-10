@@ -5,10 +5,13 @@ from __future__ import annotations
 
 import bisect
 import importlib.resources
-import re
+import json
 import sys
+from collections import defaultdict
 
 import skidl
+import yaml
+from kbplacer.kle_serial import Key, MatrixAnnotatedKeyboard, get_keyboard
 
 ATMEGA32U4AU_PIN_ASSIGN_ORDER = [
     "PB0",
@@ -38,58 +41,28 @@ ATMEGA32U4AU_PIN_ASSIGN_ORDER = [
 ]
 
 
-def is_iso_enter(key) -> bool:
-    key_width = float(key["width"])
-    key_height = float(key["height"])
-    key_width_2 = float(key["width2"])
-    key_height_2 = float(key["height2"])
-    return (
-        key_width == 1.25
-        and key_height == 2
-        and key_width_2 == 1.5
-        and key_height_2 == 1
-    )
+def load_keyboard(layout_path: str) -> MatrixAnnotatedKeyboard:
+    with open(layout_path, encoding="utf-8") as f:
+        if layout_path.endswith("yaml") or layout_path.endswith("yml"):
+            layout = yaml.safe_load(f)
+        else:
+            layout = json.load(f)
+        _keyboard = get_keyboard(layout)
+        if not isinstance(_keyboard, MatrixAnnotatedKeyboard):
+            try:
+                _keyboard = MatrixAnnotatedKeyboard(_keyboard.meta, _keyboard.keys)
+            except Exception as e:
+                msg = (
+                    f"Layout from '{layout_path}' is not convertable to "
+                    "matrix annotated keyboard which is required for schematic create. "
+                    f"Conversion failed with error: '{e}'"
+                )
+                raise RuntimeError(msg) from e
+        _keyboard.collapse()
+        return _keyboard
 
 
-def find_closest_smaller_or_equal(lst, target):
-    index = bisect.bisect_right(lst, target)
-    if index == 0:
-        return None  # No value is smaller or equal
-    else:
-        return lst[index - 1]
-
-
-def add_stabilizer(reference, stabilizer_footprint, key_width):
-    supported_stabilizers = [2, 3, 6, 6.25, 7, 8]
-    stabilizer_width = find_closest_smaller_or_equal(supported_stabilizers, key_width)
-
-    if stabilizer_width:
-        stabilizer_footprint = f"{stabilizer_footprint}".format(stabilizer_width)
-        stabilizer = skidl.Part(
-            "Mechanical", "MountingHole", footprint=stabilizer_footprint
-        )
-        stabilizer.ref = reference
-
-
-def add_iso_enter_switch(
-    switch_footprint, diode_footprint, stabilizer_footprint
-) -> tuple[skidl.Part, skidl.Part]:
-    # use 1u switch, do not bother with detection of dedicated ISO key which
-    # name is library dependent (and it is not passed via CLI yet)
-    switch_footprint = f"{switch_footprint}".format(1)
-
-    switch = skidl.Part("Switch", "SW_Push", footprint=switch_footprint)
-    diode = skidl.Part("Device", "D", footprint=diode_footprint)
-
-    switch_reference_number = switch.ref[2:]
-    add_stabilizer(f"ST{switch_reference_number}", stabilizer_footprint, 2)
-
-    return switch, diode
-
-
-def add_regular_switch(
-    switch_footprint, key_width, diode_footprint, stabilizer_footprint
-) -> tuple[skidl.Part, skidl.Part]:
+def is_width_supported(key: Key) -> bool:
     # probably should use some searching to see if given footprint exist,
     # for now just assume that any library supports following widths:
     supported_widths = [
@@ -110,68 +83,106 @@ def add_regular_switch(
         6.5,
         7,
     ]
-    if key_width not in supported_widths:
-        key_width = 1
-
-    switch_footprint = f"{switch_footprint}".format(key_width)
-
-    switch = skidl.Part("Switch", "SW_Push", footprint=switch_footprint)
-    diode = skidl.Part("Device", "D", footprint=diode_footprint)
-
-    if stabilizer_footprint and key_width >= 2:
-        switch_reference_number = switch.ref[2:]
-        add_stabilizer(f"ST{switch_reference_number}", stabilizer_footprint, key_width)
-
-    return switch, diode
+    return key.width in supported_widths
 
 
-def is_key_label_valid(label) -> bool:
-    if label and re.match(r"^[0-9]+,[0-9]+$", label):
-        return True
+def is_iso_enter(key: Key) -> bool:
+    return (
+        key.width == 1.25 and key.height == 2 and key.width2 == 1.5 and key.height2 == 1
+    )
+
+
+def find_closest_smaller_or_equal(lst, target):
+    index = bisect.bisect_right(lst, target)
+    if index == 0:
+        return None  # No value is smaller or equal
     else:
-        return False
+        return lst[index - 1]
 
 
-def handle_switch_matrix(keys, switch_footprint, diode_footprint, stabilizer_footprint):
+def add_stabilizer(reference, footprint, key: Key) -> None:
+    key_width = max(key.width, key.height)
+    supported_stabilizers = [2, 3, 6, 6.25, 7, 8]
+    stabilizer_width = find_closest_smaller_or_equal(supported_stabilizers, key_width)
+
+    if stabilizer_width:
+        footprint = f"{footprint}".format(stabilizer_width)
+        skidl.Part("Mechanical", "MountingHole", footprint=footprint, ref=reference)
+
+
+def add_regular_switch(reference, footprint, key: Key) -> skidl.Part:
+    if not is_width_supported(key) or is_iso_enter(key):
+        key_width = 1
+    else:
+        key_width = key.width
+
+    footprint = footprint.format(key_width)
+    return skidl.Part("Switch", "SW_Push", footprint=footprint, ref=reference)
+
+
+def add_diode(reference, footprint) -> skidl.Part:
+    return skidl.Part("Device", "D", footprint=footprint, ref=reference)
+
+
+def handle_switch_matrix(
+    keyboard: MatrixAnnotatedKeyboard,
+    switch_footprint,
+    diode_footprint,
+    stabilizer_footprint,
+):
     rows = {}
     columns = {}
 
-    for key in keys:
-        labels = key["labels"]
-        if not labels:
-            msg = "Key labels missing"
-            raise RuntimeError(msg)
+    progress: dict[tuple[str, str], list[str]] = defaultdict(list)
+    diodes: dict[str, skidl.Part] = {}
 
-        # be forgiving, remove all whitespaces to fix simple mistakes:
-        labels[0] = re.sub(r"\s+", "", str(labels[0]), flags=re.UNICODE)
+    current_ref = 1
 
-        if not is_key_label_valid(labels[0]):
-            msg = (
-                f"Key label invalid: '{labels[0]}' - "
-                "label needs to follow 'row,column' format, for example '1,2'"
-            )
-            raise RuntimeError(msg)
+    for k in keyboard.keys_in_matrix_order():
+        row, column = MatrixAnnotatedKeyboard.get_matrix_position(k)
 
-        row, column = map(int, labels[0].split(","))
+        row_net = f"ROW{row}" if row.isdigit() else row
+        column_net = f"COL{column}" if column.isdigit() else column
 
         if row not in rows:
-            rows[row] = skidl.Net(f"ROW{row}")
+            rows[row] = skidl.Net(row_net)
         if column not in columns:
-            columns[column] = skidl.Net(f"COL{column}")
+            columns[column] = skidl.Net(column_net)
 
-        if is_iso_enter(key):
-            switch, diode = add_iso_enter_switch(
-                switch_footprint, diode_footprint, stabilizer_footprint
-            )
+        position = (row, column)
+        layout_option = len(progress[position])
+        if layout_option == 0:
+            switch_reference = f"SW{current_ref}"
+            stab_reference = f"ST{current_ref}"
+            diode_reference = f"D{current_ref}"
+            current_ref += 1
         else:
-            key_width = float(key["width"])
-            switch, diode = add_regular_switch(
-                switch_footprint, key_width, diode_footprint, stabilizer_footprint
-            )
+            default_switch = progress[position][0]
+            default_ref = default_switch[2:]
+            switch_reference = f"SW{default_ref}_{layout_option}"
+            stab_reference = f"ST{default_ref}_{layout_option}"
+            diode_reference = f"D{default_ref}"
+
+        switch = add_regular_switch(switch_reference, switch_footprint, k)
+
+        if (
+            stabilizer_footprint
+            and is_width_supported(k)
+            and (k.width >= 2 or k.height >= 2)
+        ):
+            add_stabilizer(stab_reference, stabilizer_footprint, k)
+
+        if layout_option == 0:
+            diode = add_diode(diode_reference, diode_footprint)
+            diodes[diode_reference] = diode
+        else:
+            diode = diodes[diode_reference]
 
         rows[row] += diode[1]
         columns[column] += switch[1]
         _ = switch[2] & diode[2]
+
+        progress[position].append(switch_reference)
 
     return rows, columns
 
@@ -334,8 +345,9 @@ def build_circuit(layout, **kwargs) -> None:
         msg = "Unsupported argument"
         raise RuntimeError(msg) from err
 
+    keyboard = load_keyboard(str(layout))
     rows, columns = handle_switch_matrix(
-        layout["keys"], switch_footprint, diode_footprint, stabilizer_footprint
+        keyboard, switch_footprint, diode_footprint, stabilizer_footprint
     )
 
     if kwargs.get("controller_circuit"):

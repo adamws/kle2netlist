@@ -1,7 +1,6 @@
 # SPDX-FileCopyrightText: 2021-present adamws <adamws@users.noreply.github.com>
 #
 # SPDX-License-Identifier: MIT
-import json
 import os
 import shutil
 
@@ -9,6 +8,11 @@ import jinja2
 import pytest
 
 from kle2netlist.skidl import build_circuit, generate_netlist
+
+LAYOUT_RUNTIME_ERROR = (
+    "Layout from '.*' is not convertable to matrix annotated keyboard"
+)
+LABEL_VALUE_ERROR = "No numeric part for row or column found in"
 
 
 def assert_netlist(netlist_template, result_file, template_dict):
@@ -34,6 +38,7 @@ def assert_netlist(netlist_template, result_file, template_dict):
     [
         ("2x2", False),
         ("2x2", True),
+        ("2x2-with-alternative-layout", False),
         ("iso-enter", False),
         ("empty", True),
     ],
@@ -55,13 +60,10 @@ def test_netlist_generation(
         shutil.copy(f"{test_dir}/{layout_filename}", str(tmpdir))
         shutil.copy(f"{test_dir}/{netlist_template}", str(tmpdir))
 
-    with open(tmpdir.join(layout_filename)) as f:
-        layout = json.loads(f.read())
-
     result_netlist_path = str(tmpdir.join("test.net"))
 
     build_circuit(
-        layout,
+        tmpdir.join(layout_filename),
         switch_footprint="PCM_lib1:SW_{:.2f}u",
         stabilizer_footprint="PCM_lib2:ST_{:.2f}u",
         diode_footprint="Diode_SMD:D_SOD-323F",
@@ -71,6 +73,7 @@ def test_netlist_generation(
 
     template_dict = {
         "switch_footprint_1u": "PCM_lib1:SW_1.00u",
+        "switch_footprint_2u": "PCM_lib1:SW_2.00u",
         "switch_footprint_iso_enter": "PCM_lib1:SW_1.00u",  # dedicated ISO enters not used
         "stabilizer_footprint_2u": "PCM_lib2:ST_2.00u",
     }
@@ -91,12 +94,9 @@ def test_no_fstring_footprint(tmpdir, request):
         shutil.copy(f"{test_dir}/{layout_filename}", str(tmpdir))
         shutil.copy(f"{test_dir}/{netlist_template}", str(tmpdir))
 
-    with open(tmpdir.join(layout_filename)) as f:
-        layout = json.loads(f.read())
-
     result_netlist_path = str(tmpdir.join("test.net"))
     build_circuit(
-        layout,
+        tmpdir.join(layout_filename),
         switch_footprint="PCM_lib1:SW",
         stabilizer_footprint="",
         diode_footprint="Diode_SMD:D_SOD-323F",
@@ -113,34 +113,24 @@ def test_no_fstring_footprint(tmpdir, request):
 
 
 @pytest.mark.parametrize(
-    ("labels"),
+    ("layout", "expected_exception", "exception_match"),
     [
-        [None, None],
-        [None, "1,2"],
-        ["1,x"],
-        ["x,1"],
-        ["1,"],
-        [",1"],
-        ["'1,2'"],
+        ('[[{"a": 0}, ""]]', RuntimeError, LAYOUT_RUNTIME_ERROR),
+        ('[[{"a": 5}, "1,2"]]', RuntimeError, LAYOUT_RUNTIME_ERROR),
+        ('[["1,x"]]', ValueError, LABEL_VALUE_ERROR),
+        ('[["x,1"]]', ValueError, LABEL_VALUE_ERROR),
+        ('[["1,"]]', ValueError, LABEL_VALUE_ERROR),
+        ('[[",1"]]', ValueError, LABEL_VALUE_ERROR),
     ],
 )
-def test_layout_with_wrong_labels(labels):
-    layout = {
-        "keys": [
-            {
-                "labels": labels,
-                "x": 0,
-                "y": 0,
-                "width": 1,
-                "height": 1,
-                "width2": 1,
-                "height2": 1,
-            },
-        ]
-    }
-    with pytest.raises(RuntimeError, match="Key label invalid"):
+def test_wrongly_annotated_layouts(layout, expected_exception, exception_match, tmpdir):
+    layout_file = tmpdir.join("layout.json")
+    with open(layout_file, "w") as f:
+        f.write(layout)
+
+    with pytest.raises(expected_exception, match=exception_match):
         build_circuit(
-            layout,
+            layout_file,
             switch_footprint="PCM_lib1:SW_{:.2f}u",
             stabilizer_footprint="PCM_lib2:ST_{:.2f}u",
             diode_footprint="Diode_SMD:D_SOD-323F",
@@ -179,23 +169,14 @@ def test_add_stabilizer(width, expected_key, expected_stabilizer, request, tmpdi
     if os.path.isdir(test_dir):
         shutil.copy(f"{test_dir}/{netlist_template}", str(tmpdir))
 
-    layout = {
-        "keys": [
-            {
-                "labels": ["0,0"],
-                "x": 0,
-                "y": 0,
-                "width": width,
-                "height": 1,
-                "width2": 1,
-                "height2": 1,
-            },
-        ]
-    }
+    layout = f'[[{{"w": {width}}}, "0,0"]]'
+    layout_file = tmpdir.join("layout.json")
+    with open(layout_file, "w") as f:
+        f.write(layout)
 
     result_netlist_path = str(tmpdir.join("test.net"))
     build_circuit(
-        layout,
+        layout_file,
         switch_footprint="PCM_lib1:SW_{:.2f}u",
         stabilizer_footprint="PCM_lib2:ST_{:.2f}u",
         diode_footprint="Diode_SMD:D_SOD-323F",

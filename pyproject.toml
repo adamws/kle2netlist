@@ -20,10 +20,12 @@ classifiers = [
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
+  "kbplacer @ git+https://github.com/adamws/kicad-kbplacer@develop",
   "typer>=0.12",
   "rich",
   # pin to some recent revision from development branch
   "skidl @ git+https://github.com/devbisme/skidl@12197f9042805952f39b468ff464dfc503a9b3c4",
+  "PyYAML",
 ]
 
 [project.urls]
