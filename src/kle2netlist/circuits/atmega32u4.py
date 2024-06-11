@@ -32,17 +32,27 @@ ATMEGA32U4AU_PIN_ASSIGN_ORDER = [
     "PF7",
 ]
 
+FOOTPRINTS = {
+    "v1": {
+        "c_template": "Capacitor_SMD:C_0603_1608Metric",
+        "r_template": "Resistor_SMD:R_0603_1608Metric",
+        "uc": "Package_QFP:TQFP-44_10x10mm_P0.8mm",
+        "crystal": "Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm",
+        "usb": "Connector_USB:USB_C_Receptacle_XKB_U262-16XN-4BVC11",
+        "esd_protection": "Package_TO_SOT_SMD:SOT-23-6",
+        "button": "Button_Switch_SMD:SW_SPST_TL3342",
+    },
+}
 
 @skidl.subcircuit
-def atmega32u4_au_v1(rows, columns):
+def atmega32u4(rows, columns, footprints):
     assignment_order = ATMEGA32U4AU_PIN_ASSIGN_ORDER[:]
-    variant = "atmega32u4_au_v1"
     num_rows = len(rows)
     num_columns = len(columns)
     num_pins = len(assignment_order)
     if num_rows + num_columns > num_pins:
         msg = (
-            f"Controller circuit '{variant}' can't handle requested matrix, "
+            "Controller circuit with atmega32u4 can't handle requested matrix, "
             f"available pins: {num_pins}, required: "
             f"{num_rows} (rows) + {num_columns} (columns)"
         )
@@ -53,20 +63,20 @@ def atmega32u4_au_v1(rows, columns):
         "Device",
         "C",
         skidl.TEMPLATE,
-        footprint="Capacitor_SMD:C_0603_1608Metric",
+        footprint=footprints["c_template"],
     )
     R = skidl.Part(
         "Device",
         "R",
         skidl.TEMPLATE,
-        footprint="Resistor_SMD:R_0603_1608Metric",
+        footprint=footprints["r_template"],
     )
 
     # start uc circuitry
     uc = skidl.Part(
         "MCU_Microchip_ATmega",
         "ATmega32U4-A",
-        footprint="Package_QFP:TQFP-44_10x10mm_P0.8mm",
+        footprint=footprints["uc"],
     )
     vcc = skidl.Net("VCC")
     gnd = skidl.Net("GND")
@@ -78,7 +88,7 @@ def atmega32u4_au_v1(rows, columns):
     crystal = skidl.Part(
         "Device",
         "Crystal_GND24",
-        footprint="Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm",
+        footprint=footprints["crystal"],
     )
     c1, c2 = C(num_copies=2, value="22p")
 
@@ -106,10 +116,10 @@ def atmega32u4_au_v1(rows, columns):
     usb = skidl.Part(
         "Connector",
         "USB_C_Receptacle_USB2.0_14P",
-        footprint="Connector_USB:USB_C_Receptacle_XKB_U262-16XN-4BVC11",
+        footprint=footprints["usb"],
     )
     esd_protection = skidl.Part(
-        "Power_Protection", "TPD2S017", footprint="Package_TO_SOT_SMD:SOT-23-6"
+        "Power_Protection", "TPD2S017", footprint=footprints["esd_protection"]
     )
     r1, r2 = R(num_copies=2, value="22")
 
@@ -142,7 +152,7 @@ def atmega32u4_au_v1(rows, columns):
     button = skidl.Part(
         "Switch",
         "SW_SPST",
-        footprint="Button_Switch_SMD:SW_SPST_TL3342",
+        footprint=footprints["button"],
         ref="RST",
     )
 
@@ -159,3 +169,7 @@ def atmega32u4_au_v1(rows, columns):
         row += uc[assignment_order.pop(0)]
     for _, column in columns.items():
         column += uc[assignment_order.pop(0)]
+
+
+def atmega32u4_au_v1(rows, columns):
+    atmega32u4(rows, columns, FOOTPRINTS["v1"])
