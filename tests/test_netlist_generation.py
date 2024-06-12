@@ -7,6 +7,7 @@ import shutil
 import jinja2
 import pytest
 
+from kle2netlist.circuits import ControllerCircuit
 from kle2netlist.skidl import build_circuit, generate_netlist
 
 LAYOUT_RUNTIME_ERROR = (
@@ -36,11 +37,11 @@ def assert_netlist(netlist_template, result_file, template_dict):
 @pytest.mark.parametrize(
     ("layout_id", "controller_circuit"),
     [
-        ("2x2", False),
-        ("2x2", True),
-        ("2x2-with-alternative-layout", False),
-        ("iso-enter", False),
-        ("empty", True),
+        ("2x2", ControllerCircuit.NONE),
+        ("2x2", ControllerCircuit.ATMEGA32U4_AU_V1),
+        ("2x2-with-alternative-layout", ControllerCircuit.NONE),
+        ("iso-enter", ControllerCircuit.NONE),
+        ("empty", ControllerCircuit.ATMEGA32U4_AU_V1),
     ],
 )
 def test_netlist_generation(
@@ -53,7 +54,9 @@ def test_netlist_generation(
     test_dir, _ = os.path.splitext(filename)
 
     layout_filename = f"{layout_id}.json"
-    controller_circuit_suffix = "-with-uc" if controller_circuit else ""
+    controller_circuit_suffix = (
+        "-with-uc" if controller_circuit != ControllerCircuit.NONE else ""
+    )
     netlist_template = f"{layout_id}{controller_circuit_suffix}.net"
 
     if os.path.isdir(test_dir):
@@ -100,7 +103,6 @@ def test_no_fstring_footprint(tmpdir, request):
         switch_footprint="PCM_lib1:SW",
         stabilizer_footprint="",
         diode_footprint="Diode_SMD:D_SOD-323F",
-        controller_circuit=False,
     )
     generate_netlist(result_netlist_path)
 
@@ -134,7 +136,6 @@ def test_wrongly_annotated_layouts(layout, expected_exception, exception_match, 
             switch_footprint="PCM_lib1:SW_{:.2f}u",
             stabilizer_footprint="PCM_lib2:ST_{:.2f}u",
             diode_footprint="Diode_SMD:D_SOD-323F",
-            controller_circuit=False,
         )
 
 
@@ -180,7 +181,6 @@ def test_add_stabilizer(width, expected_key, expected_stabilizer, request, tmpdi
         switch_footprint="PCM_lib1:SW_{:.2f}u",
         stabilizer_footprint="PCM_lib2:ST_{:.2f}u",
         diode_footprint="Diode_SMD:D_SOD-323F",
-        controller_circuit=False,
     )
     generate_netlist(result_netlist_path)
     template_dict = {

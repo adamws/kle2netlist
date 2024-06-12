@@ -8,17 +8,19 @@ import importlib.resources
 import json
 import sys
 from collections import defaultdict
+from pathlib import Path
+from typing import List, Optional, Union
 
 import skidl
 import yaml
 from kbplacer.kle_serial import Key, MatrixAnnotatedKeyboard, get_keyboard
 
-from .circuits.atmega32u4 import atmega32u4_au_v1
+from .circuits import ControllerCircuit
 
 
-def load_keyboard(layout_path: str) -> MatrixAnnotatedKeyboard:
+def load_keyboard(layout_path: Union[str, Path]) -> MatrixAnnotatedKeyboard:
     with open(layout_path, encoding="utf-8") as f:
-        if layout_path.endswith("yaml") or layout_path.endswith("yml"):
+        if str(layout_path).endswith("yaml") or str(layout_path).endswith("yml"):
             layout = yaml.safe_load(f)
         else:
             layout = json.load(f)
@@ -162,10 +164,16 @@ def handle_switch_matrix(
     return rows, columns
 
 
-def build_circuit(layout, **kwargs) -> None:
+def build_circuit(
+    layout: Union[str, Path],
+    switch_footprint: str,
+    stabilizer_footprint: str,
+    diode_footprint: str,
+    controller_circuit: ControllerCircuit = ControllerCircuit.NONE,
+    additional_search_path: Optional[List[str]] = None,
+) -> None:
     default_circuit.reset()
     skidl.set_default_tool(skidl.KICAD8)
-    additional_search_path = kwargs.get("additional_search_path")
     if additional_search_path:
         for path in additional_search_path:
             skidl.lib_search_paths[skidl.KICAD].append(path)
@@ -180,25 +188,15 @@ def build_circuit(layout, **kwargs) -> None:
             default_search_path = p.parent.joinpath("data/kicad-symbols")
     skidl.lib_search_paths[skidl.KICAD8].append(default_search_path)
 
-    try:
-        switch_footprint = kwargs.get("switch_footprint")
-        stabilizer_footprint = kwargs.get("stabilizer_footprint")
-        diode_footprint = kwargs.get("diode_footprint")
-
-    except KeyError as err:
-        msg = "Unsupported argument"
-        raise RuntimeError(msg) from err
-
-    keyboard = load_keyboard(str(layout))
+    keyboard = load_keyboard(layout)
     rows, columns = handle_switch_matrix(
         keyboard, switch_footprint, diode_footprint, stabilizer_footprint
     )
 
-    if kwargs.get("controller_circuit"):
-        atmega32u4_au_v1(rows, columns)
+    controller_circuit.add(rows, columns)
 
 
-def generate_netlist(output) -> None:
+def generate_netlist(output: Union[str, Path]) -> None:
     skidl.generate_netlist(file_=str(output))
 
 

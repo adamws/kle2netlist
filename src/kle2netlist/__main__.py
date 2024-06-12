@@ -10,6 +10,8 @@ from rich.console import Console
 from kle2netlist._version import __version__
 from kle2netlist.skidl import build_circuit, generate_netlist
 
+from .circuits import ControllerCircuit
+
 app = typer.Typer(
     name="kle2netlist",
     help="KiCad netlist generator for mechanical keyboards ",
@@ -49,10 +51,10 @@ def main(
     lib_paths: Optional[List[str]] = typer.Option(
         None, "-l", "--lib-path", help="Path to symbol library"
     ),
-    controller_circuit: bool = typer.Option(
-        False,
+    controller_circuit: ControllerCircuit = typer.Option(
+        ControllerCircuit.NONE,
         "--controller-circuit",
-        help="Add ATmega32U4-AU minimal circuitry",
+        help="Add microcontroller circuitry",
     ),
     version: bool = typer.Option(
         None,
@@ -83,8 +85,8 @@ def main(
             switch_footprint=switch_footprint,
             stabilizer_footprint=stabilizer_footprint,
             diode_footprint=diode_footprint,
-            additional_search_path=lib_paths,
             controller_circuit=controller_circuit,
+            additional_search_path=lib_paths,
         )
 
         generate_netlist(output)

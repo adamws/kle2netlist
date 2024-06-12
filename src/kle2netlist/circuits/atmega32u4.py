@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2024-present adamws <adamws@users.noreply.github.com>
 #
 # SPDX-License-Identifier: MIT
-import sys
+from copy import copy
 
 import skidl
 
@@ -32,17 +32,20 @@ ATMEGA32U4AU_PIN_ASSIGN_ORDER = [
     "PF7",
 ]
 
-FOOTPRINTS = {
-    "v1": {
-        "c_template": "Capacitor_SMD:C_0603_1608Metric",
-        "r_template": "Resistor_SMD:R_0603_1608Metric",
-        "uc": "Package_QFP:TQFP-44_10x10mm_P0.8mm",
-        "crystal": "Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm",
-        "usb": "Connector_USB:USB_C_Receptacle_XKB_U262-16XN-4BVC11",
-        "esd_protection": "Package_TO_SOT_SMD:SOT-23-6",
-        "button": "Button_Switch_SMD:SW_SPST_TL3342",
-    },
+V1_FOOTPRINTS = {
+    "c_template": "Capacitor_SMD:C_0603_1608Metric",
+    "r_template": "Resistor_SMD:R_0603_1608Metric",
+    "uc": "Package_QFP:TQFP-44_10x10mm_P0.8mm",
+    "crystal": "Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm",
+    "usb": "Connector_USB:USB_C_Receptacle_XKB_U262-16XN-4BVC11",
+    "esd_protection": "Package_TO_SOT_SMD:SOT-23-6",
+    "button": "Button_Switch_SMD:SW_SPST_TL3342",
 }
+V2_FOOTPRINTS = copy(V1_FOOTPRINTS)
+V2_FOOTPRINTS["uc"] = "Package_DFN_QFN:QFN-44-1EP_7x7mm_P0.5mm_EP5.2x5.2mm"
+
+FOOTPRINTS = {"v1": V1_FOOTPRINTS, "v2": V2_FOOTPRINTS}
+
 
 @skidl.subcircuit
 def atmega32u4(rows, columns, footprints):
@@ -173,3 +176,7 @@ def atmega32u4(rows, columns, footprints):
 
 def atmega32u4_au_v1(rows, columns):
     atmega32u4(rows, columns, FOOTPRINTS["v1"])
+
+
+def atmega32u4_au_v2(rows, columns):
+    atmega32u4(rows, columns, FOOTPRINTS["v2"])
