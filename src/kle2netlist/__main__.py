@@ -30,9 +30,7 @@ def version_callback(value: bool):
 @app.command(name="")
 def main(
     layout: Path = typer.Option(..., help="Path to kle layout file"),
-    output: Path = typer.Option(
-        "keyboard.net", "--output", help="Output netlist file"
-    ),
+    output: Path = typer.Option("keyboard.net", "--output", help="Output netlist file"),
     switch_footprint: str = typer.Option(
         "PCM_Switch_Keyboard_Cherry_MX:SW_Cherry_MX_PCB_{:.2f}u",
         "-swf",

@@ -6,7 +6,9 @@ import shutil
 
 import jinja2
 import pytest
+from typer.testing import CliRunner
 
+from kle2netlist.__main__ import app
 from kle2netlist.circuits import ControllerCircuit
 from kle2netlist.skidl import build_circuit, generate_netlist
 
@@ -14,6 +16,8 @@ LAYOUT_RUNTIME_ERROR = (
     "Layout from '.*' is not convertable to matrix annotated keyboard"
 )
 LABEL_VALUE_ERROR = "No numeric part for row or column found in"
+
+runner = CliRunner()
 
 
 def assert_netlist(netlist_template, result_file, template_dict):
@@ -35,54 +39,88 @@ def assert_netlist(netlist_template, result_file, template_dict):
 
 
 @pytest.mark.parametrize(
-    ("layout_id", "controller_circuit"),
+    ("layout_filename", "netlist_template", "controller_circuit"),
     [
-        ("2x2", ControllerCircuit.NONE),
-        ("2x2", ControllerCircuit.ATMEGA32U4_AU_V1),
-        ("2x2-with-alternative-layout", ControllerCircuit.NONE),
-        ("iso-enter", ControllerCircuit.NONE),
-        ("empty", ControllerCircuit.ATMEGA32U4_AU_V1),
+        # fmt: off
+        ("2x2.json", "2x2.net", ControllerCircuit.NONE),
+        ("2x2.json", "2x2-with-uc.net", ControllerCircuit.ATMEGA32U4_AU_V1),
+        ("2x2-with-alternative-layout.json", "2x2-with-alternative-layout.net", ControllerCircuit.NONE),
+        ("iso-enter.json", "iso-enter.net", ControllerCircuit.NONE),
+        ("empty.json", "empty-with-uc.net", ControllerCircuit.ATMEGA32U4_AU_V1),
+        # fmt: on
     ],
 )
-def test_netlist_generation(
-    layout_id,
-    controller_circuit,
-    tmpdir,
-    request,
-):
-    filename = request.module.__file__
-    test_dir, _ = os.path.splitext(filename)
-
-    layout_filename = f"{layout_id}.json"
-    controller_circuit_suffix = (
-        "-with-uc" if controller_circuit != ControllerCircuit.NONE else ""
-    )
-    netlist_template = f"{layout_id}{controller_circuit_suffix}.net"
-
-    if os.path.isdir(test_dir):
-        shutil.copy(f"{test_dir}/{layout_filename}", str(tmpdir))
-        shutil.copy(f"{test_dir}/{netlist_template}", str(tmpdir))
-
-    result_netlist_path = str(tmpdir.join("test.net"))
-
-    build_circuit(
-        tmpdir.join(layout_filename),
-        switch_footprint="PCM_lib1:SW_{:.2f}u",
-        stabilizer_footprint="PCM_lib2:ST_{:.2f}u",
-        diode_footprint="Diode_SMD:D_SOD-323F",
-        controller_circuit=controller_circuit,
-    )
-    generate_netlist(result_netlist_path)
-
-    template_dict = {
+class TestNetlistGeneration:
+    TEMPLATE_DICT = {
         "switch_footprint_1u": "PCM_lib1:SW_1.00u",
         "switch_footprint_2u": "PCM_lib1:SW_2.00u",
         "switch_footprint_iso_enter": "PCM_lib1:SW_1.00u",  # dedicated ISO enters not used
         "stabilizer_footprint_2u": "PCM_lib2:ST_2.00u",
     }
-    assert_netlist(
-        str(tmpdir.join(netlist_template)), result_netlist_path, template_dict
-    )
+
+    @pytest.fixture
+    def file_isolation(self, tmpdir, request):
+        def _copy_files(layout_filename, netlist_template) -> None:
+            filename = request.module.__file__
+            test_dir, _ = os.path.splitext(filename)
+
+            if os.path.isdir(test_dir):
+                shutil.copy(f"{test_dir}/{layout_filename}", tmpdir)
+                shutil.copy(f"{test_dir}/{netlist_template}", tmpdir)
+
+        return _copy_files
+
+    def test_api(
+        self,
+        layout_filename,
+        netlist_template,
+        controller_circuit,
+        file_isolation,
+        tmpdir,
+    ) -> None:
+        file_isolation(layout_filename, netlist_template)
+        result_netlist_path = tmpdir.join("test.net")
+
+        build_circuit(
+            tmpdir.join(layout_filename),
+            switch_footprint="PCM_lib1:SW_{:.2f}u",
+            stabilizer_footprint="PCM_lib2:ST_{:.2f}u",
+            diode_footprint="Diode_SMD:D_SOD-323F",
+            controller_circuit=controller_circuit,
+        )
+        generate_netlist(result_netlist_path)
+
+        assert_netlist(
+            tmpdir.join(netlist_template), result_netlist_path, self.TEMPLATE_DICT
+        )
+
+    def test_cli(
+        self,
+        layout_filename,
+        netlist_template,
+        controller_circuit,
+        file_isolation,
+        tmpdir,
+    ) -> None:
+        file_isolation(layout_filename, netlist_template)
+        result_netlist_path = tmpdir.join("test.net")
+
+        # fmt: off
+        result = runner.invoke(app, [
+            "--layout", tmpdir.join(layout_filename),
+            "--output", result_netlist_path,
+            "--switch-footprint", "PCM_lib1:SW_{:.2f}u",
+            "--stabilizer-footprint", "PCM_lib2:ST_{:.2f}u",
+            "--diode-footprint", "Diode_SMD:D_SOD-323F",
+            "--controller-circuit", controller_circuit,
+            ],
+        )
+        # fmt: on
+        assert result.exit_code == 0
+
+        assert_netlist(
+            tmpdir.join(netlist_template), result_netlist_path, self.TEMPLATE_DICT
+        )
 
 
 def test_no_fstring_footprint(tmpdir, request):
