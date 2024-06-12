@@ -171,8 +171,7 @@ def build_circuit(
     diode_footprint: str,
     controller_circuit: ControllerCircuit = ControllerCircuit.NONE,
     additional_search_path: Optional[List[str]] = None,
-) -> None:
-    default_circuit.reset()
+) -> skidl.Circuit:
     skidl.set_default_tool(skidl.KICAD8)
     if additional_search_path:
         for path in additional_search_path:
@@ -188,16 +187,18 @@ def build_circuit(
             default_search_path = p.parent.joinpath("data/kicad-symbols")
     skidl.lib_search_paths[skidl.KICAD8].append(default_search_path)
 
-    keyboard = load_keyboard(layout)
-    rows, columns = handle_switch_matrix(
-        keyboard, switch_footprint, diode_footprint, stabilizer_footprint
-    )
+    circuit = skidl.Circuit()
+    with circuit:
+        keyboard = load_keyboard(layout)
+        rows, columns = handle_switch_matrix(
+            keyboard, switch_footprint, diode_footprint, stabilizer_footprint
+        )
+        controller_circuit.add(rows, columns)
+    return circuit
 
-    controller_circuit.add(rows, columns)
 
-
-def generate_netlist(output: Union[str, Path]) -> None:
-    skidl.generate_netlist(file_=str(output))
+def generate_netlist(circuit: skidl.Circuit, output: Union[str, Path]) -> None:
+    circuit.generate_netlist(file_=str(output))
 
 
 __all__ = ["build_circuit", "generate_netlist"]

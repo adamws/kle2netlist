@@ -78,7 +78,7 @@ def main(
         raise typer.Exit(code=1)
 
     try:
-        build_circuit(
+        circuit = build_circuit(
             layout,
             switch_footprint=switch_footprint,
             stabilizer_footprint=stabilizer_footprint,
@@ -87,7 +87,7 @@ def main(
             additional_search_path=lib_paths,
         )
 
-        generate_netlist(output)
+        generate_netlist(circuit, output)
     except RuntimeError as e:
         console.print(f"[red]error:[/] [bold]{e}[/]")
         raise typer.Exit(code=1)

@@ -81,14 +81,14 @@ class TestNetlistGeneration:
         file_isolation(layout_filename, netlist_template)
         result_netlist_path = tmpdir.join("test.net")
 
-        build_circuit(
+        circuit = build_circuit(
             tmpdir.join(layout_filename),
             switch_footprint="PCM_lib1:SW_{:.2f}u",
             stabilizer_footprint="PCM_lib2:ST_{:.2f}u",
             diode_footprint="Diode_SMD:D_SOD-323F",
             controller_circuit=controller_circuit,
         )
-        generate_netlist(result_netlist_path)
+        generate_netlist(circuit, result_netlist_path)
 
         assert_netlist(
             tmpdir.join(netlist_template), result_netlist_path, self.TEMPLATE_DICT
@@ -136,13 +136,13 @@ def test_no_fstring_footprint(tmpdir, request):
         shutil.copy(f"{test_dir}/{netlist_template}", str(tmpdir))
 
     result_netlist_path = str(tmpdir.join("test.net"))
-    build_circuit(
+    circuit = build_circuit(
         tmpdir.join(layout_filename),
         switch_footprint="PCM_lib1:SW",
         stabilizer_footprint="",
         diode_footprint="Diode_SMD:D_SOD-323F",
     )
-    generate_netlist(result_netlist_path)
+    generate_netlist(circuit, result_netlist_path)
 
     template_dict = {
         "switch_footprint_1u": "PCM_lib1:SW",
@@ -214,13 +214,13 @@ def test_add_stabilizer(width, expected_key, expected_stabilizer, request, tmpdi
         f.write(layout)
 
     result_netlist_path = str(tmpdir.join("test.net"))
-    build_circuit(
+    circuit = build_circuit(
         layout_file,
         switch_footprint="PCM_lib1:SW_{:.2f}u",
         stabilizer_footprint="PCM_lib2:ST_{:.2f}u",
         diode_footprint="Diode_SMD:D_SOD-323F",
     )
-    generate_netlist(result_netlist_path)
+    generate_netlist(circuit, result_netlist_path)
     template_dict = {
         "switch_footprint": f"PCM_lib1:SW_{expected_key}",
     }
