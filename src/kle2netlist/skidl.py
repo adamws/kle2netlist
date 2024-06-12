@@ -1,6 +1,8 @@
 # SPDX-FileCopyrightText: 2021-present adamws <adamws@users.noreply.github.com>
 #
 # SPDX-License-Identifier: MIT
+from __future__ import annotations
+
 import bisect
 import importlib.resources
 import re
@@ -36,7 +38,7 @@ ATMEGA32U4AU_PIN_ASSIGN_ORDER = [
 ]
 
 
-def is_iso_enter(key):
+def is_iso_enter(key) -> bool:
     key_width = float(key["width"])
     key_height = float(key["height"])
     key_width_2 = float(key["width2"])
@@ -69,7 +71,9 @@ def add_stabilizer(reference, stabilizer_footprint, key_width):
         stabilizer.ref = reference
 
 
-def add_iso_enter_switch(switch_footprint, diode_footprint, stabilizer_footprint):
+def add_iso_enter_switch(
+    switch_footprint, diode_footprint, stabilizer_footprint
+) -> tuple[skidl.Part, skidl.Part]:
     # use 1u switch, do not bother with detection of dedicated ISO key which
     # name is library dependent (and it is not passed via CLI yet)
     switch_footprint = f"{switch_footprint}".format(1)
@@ -85,7 +89,7 @@ def add_iso_enter_switch(switch_footprint, diode_footprint, stabilizer_footprint
 
 def add_regular_switch(
     switch_footprint, key_width, diode_footprint, stabilizer_footprint
-):
+) -> tuple[skidl.Part, skidl.Part]:
     # probably should use some searching to see if given footprint exist,
     # for now just assume that any library supports following widths:
     supported_widths = [
@@ -121,7 +125,7 @@ def add_regular_switch(
     return switch, diode
 
 
-def is_key_label_valid(label):
+def is_key_label_valid(label) -> bool:
     if label and re.match(r"^[0-9]+,[0-9]+$", label):
         return True
     else:
@@ -172,7 +176,7 @@ def handle_switch_matrix(keys, switch_footprint, diode_footprint, stabilizer_foo
     return rows, columns
 
 
-def add_controller_atmega32u4_au_v1():
+def add_controller_atmega32u4_au_v1() -> skidl.Part:
     # create templates
     C = skidl.Part(
         "Device",
@@ -283,7 +287,7 @@ def add_controller_atmega32u4_au_v1():
     return uc
 
 
-def add_controller_circuit(variant, rows, columns):
+def add_controller_circuit(variant, rows, columns) -> None:
     uc = add_controller_atmega32u4_au_v1()
     pins = ATMEGA32U4AU_PIN_ASSIGN_ORDER[:]
     num_rows = len(rows)
@@ -303,7 +307,7 @@ def add_controller_circuit(variant, rows, columns):
         column += uc[pins.pop(0)]
 
 
-def build_circuit(layout, **kwargs):
+def build_circuit(layout, **kwargs) -> None:
     default_circuit.reset()
     skidl.set_default_tool(skidl.KICAD8)
     additional_search_path = kwargs.get("additional_search_path")
@@ -338,7 +342,7 @@ def build_circuit(layout, **kwargs):
         add_controller_circuit("atmega32u4_au_v1", rows, columns)
 
 
-def generate_netlist(output):
+def generate_netlist(output) -> None:
     skidl.generate_netlist(file_=str(output))
 
 
