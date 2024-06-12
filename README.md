@@ -26,15 +26,13 @@ Usage: kle2netlist [OPTIONS]
 Generates KiCad netlist for a given keyboard layout json file.
 
 Options
---layout                    Path to kle layout file [default: None] [required]
---output-dir                Output directory, created if not existing [default: .]
---name                      Netlist name without file extension [default: keyboard]
---switch-footprint -swf     Switch footprint f-string [default: PCM_Switch_Keyboard_Cherry_MX:SW_Cherry_MX_PCB_{:.2f}u]
---stabilizer-footprint -stf Stabilizer footprint [default: PCM_Mounting_Keyboard_Stabilizer:Stabilizer_Cherry_MX_{:.2f}u]
---diode-footprint -df       Diode footprint [default: Diode_SMD:D_SOD-123F]
---lib-path -l               Path to symbol library [default: None]
---controller-circuit        Add ATmega32U4-AU minimal circuitry
---no-xml                    Skip xml netlist generation
---version -v                Prints the version of the kle2netlist package.
---help                      Show this message and exit.
+--layout                Path to kle layout file [default: None] [required]
+--output                Output netlist file [default: keyboard.net]
+--switch-footprint      Switch footprint f-string [default: PCM_Switch_Keyboard_Cherry_MX:SW_Cherry_MX_PCB_{:.2f}u]
+--stabilizer-footprint  Stabilizer footprint f-string, optional [default: PCM_Mounting_Keyboard_Stabilizer:Stabilizer_Cherry_MX_{:.2f}u]
+--diode-footprint       Diode footprint [default: Diode_SMD:D_SOD-123F]
+--lib-path              Path to symbol library [default: None]
+--controller-circuit    Add microcontroller circuitry [default: none]
+--version               Prints the version of the kle2netlist package.
+--help                  Show this message and exit.
 ```
