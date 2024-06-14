@@ -8,9 +8,8 @@ import typer
 from rich.console import Console
 
 from kle2netlist._version import __version__
-from kle2netlist.skidl import build_circuit, generate_netlist
-
-from .circuits import ControllerCircuit
+from kle2netlist.circuits import ControllerCircuit
+from kle2netlist.netlist import build_circuit, generate_netlist
 
 app = typer.Typer(
     name="kle2netlist",

@@ -10,7 +10,7 @@ from typer.testing import CliRunner
 
 from kle2netlist.__main__ import app
 from kle2netlist.circuits import ControllerCircuit
-from kle2netlist.skidl import build_circuit, generate_netlist
+from kle2netlist.netlist import build_circuit, generate_netlist
 
 LAYOUT_RUNTIME_ERROR = (
     "Layout from '.*' is not convertable to matrix annotated keyboard"
