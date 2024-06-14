@@ -180,3 +180,4 @@ system-packages = true # for `pcbnew` module
 
 [tool.hatch.envs.kicad.scripts]
 circuits = "python -m kle2netlist.circuits.atmega32u4"
+positions = "python -m kle2netlist.pcb"

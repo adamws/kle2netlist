@@ -46,6 +46,30 @@ V2_FOOTPRINTS["uc"] = "Package_DFN_QFN:QFN-44-1EP_7x7mm_P0.5mm_EP5.2x5.2mm"
 
 FOOTPRINTS = {"v1": V1_FOOTPRINTS, "v2": V2_FOOTPRINTS}
 
+# fmt: off
+V1_POSITIONS = {
+    "C1":  { "x": 34.01, "y": 1.69,    "rot": 45.0,   "side": "Back" },
+    "C2":  { "x": 33.65, "y": -2.78,   "rot": -45.0,  "side": "Back" },
+    "C3":  { "x": 11.58, "y": 4.24,    "rot": 180.0,  "side": "Back" },
+    "C4":  { "x": 21.29, "y": -8.15,   "rot": 180.0,  "side": "Back" },
+    "C5":  { "x": 24.2,  "y": 9.37,    "rot": -90.0,  "side": "Back" },
+    "C6":  { "x": 11.58, "y": -3.7,    "rot": 180.0,  "side": "Back" },
+    "C7":  { "x": 16.97, "y": -8.15,   "rot": 180.0,  "side": "Back" },
+    "C8":  { "x": 21.29, "y": -9.74,   "rot": 180.0,  "side": "Back" },
+    "J1":  { "x": 18.75, "y": -27.275, "rot": 0.0,    "side": "Back" },
+    "R1":  { "x": 17.85, "y": -12.28 , "rot": 90.0,   "side": "Back" },
+    "R2":  { "x": 19.55, "y": -12.27,  "rot": 90.0,   "side": "Back" },
+    "R3":  { "x": 16.96, "y": 9.37,    "rot": -90.0,  "side": "Back" },
+    "R4":  { "x": 32.01, "y": -5.39,   "rot": -135.0, "side": "Back" },
+    "RST": { "x": 41.75, "y": -6.0,    "rot": 90.0,   "side": "Back" },
+    "U1":  { "x": 20.98, "y": 0.25,    "rot": -90.0,  "side": "Back" },
+    "U2":  { "x": 18.7,  "y": -18.375, "rot": 0.0,    "side": "Back" },
+    "Y1":  { "x": 31.6,  "y": -0.68,   "rot": 135.0,  "side": "Back" }
+}
+# fmt: on
+
+POSITIONS = {"v1": V1_POSITIONS, "v2": None}
+
 
 @skidl.subcircuit
 def atmega32u4(rows, columns, footprints):
@@ -183,6 +207,9 @@ def atmega32u4_au_v2(rows, columns):
 
 
 if __name__ == "__main__":
+    import pcbnew
+
+    from kle2netlist.pcb import set_positions
     from kle2netlist.skidl import set_skidl_search_path
 
     set_skidl_search_path()
@@ -192,4 +219,9 @@ if __name__ == "__main__":
         atmega32u4_au_v1({}, {})
 
     libraries = ["/usr/share/kicad/footprints"]
-    circuit.generate_pcb(file_="atmega32u4_au_v1.kicad_pcb", fp_libs=libraries)
+    board_path = "atmega32u4_au_v1.kicad_pcb"
+    circuit.generate_pcb(file_=board_path, fp_libs=libraries)
+
+    board = pcbnew.LoadBoard(board_path)
+    set_positions(board, POSITIONS["v1"])
+    pcbnew.SaveBoard(board_path, board)
