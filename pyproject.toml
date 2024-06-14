@@ -174,3 +174,9 @@ exclude_lines = [
   "if __name__ == .__main__.:",
   "if TYPE_CHECKING:",
 ]
+
+[tool.hatch.envs.kicad]
+system-packages = true # for `pcbnew` module
+
+[tool.hatch.envs.kicad.scripts]
+circuits = "python -m kle2netlist.circuits.atmega32u4"

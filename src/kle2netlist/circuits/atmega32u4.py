@@ -180,3 +180,16 @@ def atmega32u4_au_v1(rows, columns):
 
 def atmega32u4_au_v2(rows, columns):
     atmega32u4(rows, columns, FOOTPRINTS["v2"])
+
+
+if __name__ == "__main__":
+    from kle2netlist.skidl import set_skidl_search_path
+
+    set_skidl_search_path()
+
+    circuit = skidl.Circuit()
+    with circuit:
+        atmega32u4_au_v1({}, {})
+
+    libraries = ["/usr/share/kicad/footprints"]
+    circuit.generate_pcb(file_="atmega32u4_au_v1.kicad_pcb", fp_libs=libraries)
