@@ -36,3 +36,18 @@ Options
 --version               Prints the version of the kle2netlist package.
 --help                  Show this message and exit.
 ```
+
+### Controller circuit templates
+
+<table>
+    <tr>
+        <td style="width:10%" align="center"><b>Name</b></td>
+        <td align="center"><b>Description</b></td>
+        <td style="width:50%"align="center"><b>Layout</b></td>
+    </tr>
+    <tr>
+        <td>atmega32u4_au_v1</td>
+        <td>[todo]</td>
+        <td><img src="kicad-templates/atmega32u4-au-v1/atmega32u4-au-v1.svg"/></td>
+    </tr>
+</table>
