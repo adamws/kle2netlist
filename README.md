@@ -41,13 +41,11 @@ Options
 
 <table>
     <tr>
-        <td style="width:10%" align="center"><b>Name</b></td>
-        <td align="center"><b>Description</b></td>
-        <td style="width:50%"align="center"><b>Layout</b></td>
+        <td style="width:40%" align="center"><b>Name and description</b></td>
+        <td align="center"><b>Layout</b></td>
     </tr>
     <tr>
-        <td>atmega32u4_au_v1</td>
-        <td>[todo]</td>
+        <td>atmega32u4_au_v1:<br>[todo]</td>
         <td><img src="kicad-templates/atmega32u4-au-v1/atmega32u4-au-v1.svg"/></td>
     </tr>
 </table>
