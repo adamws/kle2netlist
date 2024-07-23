@@ -125,9 +125,10 @@ def atmega32u4(rows, columns, footprints):
     net_xtal2 += c2[1], crystal[3], uc["XTAL2"]
     gnd += c1[2], c2[2], crystal[2], crystal[4]
 
-    # decoupling capacitors
+    # decoupling capacitors, 0.1u for each pin (as recommended in datasheet)
+    # and one bigger for VBUS, some designs use less and work just as well
     c3, c4, c5, c6 = C(num_copies=4, value="0.1u")
-    c7 = C(value="4.7u")
+    c7 = C(value="4.7u")  # could be 10u
 
     for c in [c3, c4, c5, c6, c7]:
         vcc += c[1]
