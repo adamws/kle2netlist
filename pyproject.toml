@@ -20,7 +20,7 @@ classifiers = [
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
-  "kbplacer @ git+https://github.com/adamws/kicad-kbplacer@develop",
+  "kbplacer==0.11",
   "typer>=0.12",
   "rich",
   # pin to some recent revision from development branch

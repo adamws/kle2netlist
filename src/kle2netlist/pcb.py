@@ -82,7 +82,7 @@ def set_positions(board: pcbnew.BOARD, footprints: List[Footprint]) -> None:
         if fp := board.FindFootprintByReference(f.ref):
             set_side(fp, f.side)
             set_rotation(fp, f.rotation)
-            set_position(fp, pcbnew.wxPointMM(f.x, f.y))
+            set_position(fp, pcbnew.VECTOR2I_MM(f.x, f.y))
             reference = fp.Reference()
             reference.SetFPRelativePosition(pcbnew.VECTOR2I_MM(f.ref_x, f.ref_y))
 
