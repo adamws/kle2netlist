@@ -11,10 +11,10 @@ svg kicad_pcb:
     -l F.Cu,B.Cu,F.Silkscreen,B.Silkscreen,Edge.Cuts \
     -o "{{without_extension(kicad_pcb)}}.svg" {{kicad_pcb}}
 
-circuits:
-  hatch run kicad:circuits
-  just svg atmega32u4_au_v1.kicad_pcb
-  firefox atmega32u4_au_v1.svg
+circuits variant:
+  hatch run kicad:circuits --variant {{variant}}
+  just svg atmega32u4_au_{{variant}}.kicad_pcb
+  firefox atmega32u4_au_{{variant}}.svg
 
 positions:
   hatch run kicad:positions
