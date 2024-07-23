@@ -1,4 +1,4 @@
-template_atmega32u4_au_v1 := "./kicad-templates/atmega32u4-au-v1/atmega32u4-au-v1.kicad_pcb"
+template_atmega32u4_au_v1 := "./atmega32u4_au_v1.kicad_pcb"
 
 test:
   hatch run default:test
@@ -13,14 +13,15 @@ svg kicad_pcb:
 
 circuits variant:
   hatch run kicad:circuits --variant {{variant}}
-  just svg atmega32u4_au_{{variant}}.kicad_pcb
-  firefox atmega32u4_au_{{variant}}.svg
+  just templates-svgs {{variant}}
 
 positions:
   hatch run kicad:positions
 
-templates-svgs:
- just svg {{template_atmega32u4_au_v1}}
- just svg-mm-to-cm {{without_extension(template_atmega32u4_au_v1)}}.svg
- firefox {{without_extension(template_atmega32u4_au_v1)}}.svg
+templates-svgs variant:
+  just svg atmega32u4_au_{{variant}}.kicad_pcb
+  just svg-mm-to-cm atmega32u4_au_{{variant}}.svg
+  cp atmega32u4_au_{{variant}}.svg ./kicad-templates/
+  rm atmega32u4_au_{{variant}}.svg
+  firefox ./kicad-templates/atmega32u4_au_{{variant}}.svg
 
