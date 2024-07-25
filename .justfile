@@ -1,4 +1,7 @@
 template_atmega32u4_au_v1 := "./atmega32u4_au_v1.kicad_pcb"
+pcb_url := "https://raw.githubusercontent.com/ai03-2725/JP60/main/JP60.kicad_pcb"
+# manually routed (temporary file):
+routed_pcb := "./atmega32u4_au_v2_routed1.kicad_pcb"
 
 test:
   hatch run default:test
@@ -16,7 +19,10 @@ circuits variant:
   just templates-svgs {{variant}}
 
 positions:
-  hatch run kicad:positions
+  hatch run kicad:positions {{pcb_url}}
+
+tracks:
+  hatch run kicad:tracks {{routed_pcb}}
 
 templates-svgs variant:
   just svg atmega32u4_au_{{variant}}.kicad_pcb
