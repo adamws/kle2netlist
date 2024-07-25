@@ -48,8 +48,4 @@ Options
         <td>atmega32u4_au_v1:<br>[todo]</td>
         <td><img src="kicad-templates/atmega32u4_au_v1.svg"/></td>
     </tr>
-    <tr>
-        <td>atmega32u4_au_v2:<br>[todo]</td>
-        <td><img src="kicad-templates/atmega32u4_au_v2.svg"/></td>
-    </tr>
 </table>

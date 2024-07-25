@@ -116,7 +116,7 @@
 #     (sheetpath (names /top/2152503131066222040) (tstamps /top/2152503131066222040)))
     (comp (ref U1)
       (value ATmega32U4-A)
-      (footprint Package_QFP:TQFP-44_10x10mm_P0.8mm)
+      (footprint Package_DFN_QFN:QFN-44-1EP_7x7mm_P0.5mm_EP5.2x5.2mm)
       (libsource (lib MCU_Microchip_ATmega) (part ATmega16U4-A))
 #     (sheetpath (names /top/14700442668264180207) (tstamps /top/14700442668264180207)))
     (comp (ref U2)

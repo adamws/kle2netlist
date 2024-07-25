@@ -1,8 +1,6 @@
 # SPDX-FileCopyrightText: 2024-present adamws <adamws@users.noreply.github.com>
 #
 # SPDX-License-Identifier: MIT
-from copy import copy
-
 import skidl
 
 ATMEGA32U4AU_PIN_ASSIGN_ORDER = [
@@ -35,38 +33,16 @@ ATMEGA32U4AU_PIN_ASSIGN_ORDER = [
 V1_FOOTPRINTS = {
     "c_template": "Capacitor_SMD:C_0603_1608Metric",
     "r_template": "Resistor_SMD:R_0603_1608Metric",
-    "uc": "Package_QFP:TQFP-44_10x10mm_P0.8mm",
+    "uc": "Package_DFN_QFN:QFN-44-1EP_7x7mm_P0.5mm_EP5.2x5.2mm",
     "crystal": "Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm",
     "usb": "Connector_USB:USB_C_Receptacle_XKB_U262-16XN-4BVC11",
     "esd_protection": "Package_TO_SOT_SMD:SOT-23-6",
     "button": "Button_Switch_SMD:SW_SPST_TL3342",
 }
-V2_FOOTPRINTS = copy(V1_FOOTPRINTS)
-V2_FOOTPRINTS["uc"] = "Package_DFN_QFN:QFN-44-1EP_7x7mm_P0.5mm_EP5.2x5.2mm"
-
-FOOTPRINTS = {"v1": V1_FOOTPRINTS, "v2": V2_FOOTPRINTS}
+FOOTPRINTS = {"v1": V1_FOOTPRINTS}
 
 # fmt: off
 V1_POSITIONS = [
-    { "ref":   "C1", "x": 34.01, "y":    1.69, "rotation":   45.0, "side": "Back", "ref_x":  0.0, "ref_y":  1.43 },
-    { "ref":   "C2", "x": 33.65, "y":   -2.78, "rotation":  -45.0, "side": "Back", "ref_x":  0.0, "ref_y": -1.43 },
-    { "ref":   "C3", "x": 11.58, "y":    4.24, "rotation":  180.0, "side": "Back", "ref_x":  0.0, "ref_y":  1.43 },
-    { "ref":   "C4", "x": 21.29, "y":   -8.15, "rotation":  180.0, "side": "Back", "ref_x": -2.5, "ref_y":   0.0 },
-    { "ref":   "C5", "x":  24.2, "y":    9.37, "rotation":  -90.0, "side": "Back", "ref_x":  0.0, "ref_y":  1.43 },
-    { "ref":   "C6", "x": 11.58, "y":    -3.7, "rotation":  180.0, "side": "Back", "ref_x":  0.0, "ref_y":  1.43 },
-    { "ref":   "C7", "x": 16.97, "y":   -8.15, "rotation":  180.0, "side": "Back", "ref_x":  0.0, "ref_y":  1.43 },
-    { "ref":   "C8", "x": 21.29, "y":   -9.74, "rotation":  180.0, "side": "Back", "ref_x": -2.5, "ref_y":   0.0 },
-    { "ref":   "J1", "x": 18.75, "y": -27.275, "rotation":    0.0, "side": "Back", "ref_x":  0.0, "ref_y": 5.715 },
-    { "ref":   "R1", "x": 17.85, "y":  -12.28, "rotation":   90.0, "side": "Back", "ref_x":  0.0, "ref_y": -1.43 },
-    { "ref":   "R2", "x": 19.55, "y":  -12.27, "rotation":   90.0, "side": "Back", "ref_x":  0.0, "ref_y":  1.43 },
-    { "ref":   "R3", "x": 16.96, "y":    9.37, "rotation":  -90.0, "side": "Back", "ref_x":  0.0, "ref_y":  1.43 },
-    { "ref":   "R4", "x": 32.01, "y":   -5.39, "rotation": -135.0, "side": "Back", "ref_x":  0.0, "ref_y":  1.43 },
-    { "ref":  "RST", "x": 41.75, "y":    -6.0, "rotation":   90.0, "side": "Back", "ref_x":  0.0, "ref_y":  3.75 },
-    { "ref":   "U1", "x": 20.98, "y":    0.25, "rotation":  -90.0, "side": "Back", "ref_x":  0.0, "ref_y":  7.45 },
-    { "ref":   "U2", "x":  18.7, "y": -18.375, "rotation":    0.0, "side": "Back", "ref_x":  0.0, "ref_y":   2.9 },
-    { "ref":   "Y1", "x":  31.6, "y":   -0.68, "rotation":  135.0, "side": "Back", "ref_x": -1.2, "ref_y":  -2.5 },
-]
-V2_POSITIONS = [
     { "ref":   "C1", "x":   -11.6355, "y":       -0.6, "rotation":  180.0, "side":  "Back", "ref_x":       0.0, "ref_y":       1.5 },
     { "ref":   "C2", "x":   -11.6355, "y":        1.6, "rotation":  180.0, "side":  "Back", "ref_x":       0.0, "ref_y":      -1.5 },
     { "ref":   "C3", "x":    -5.9205, "y":      3.952, "rotation":  180.0, "side":  "Back", "ref_x":       2.5, "ref_y":       0.0 },
@@ -85,7 +61,7 @@ V2_POSITIONS = [
     { "ref":   "U2", "x":    24.4865, "y":      1.285, "rotation":    0.0, "side":  "Back", "ref_x":       0.0, "ref_y":      2.45 },
     { "ref":   "Y1", "x":    -7.9525, "y":        0.5, "rotation":  -90.0, "side":  "Back", "ref_x":       0.0, "ref_y":      -2.5 },
 ]
-V2_TRACKS = [
+V1_TRACKS = [
     { "x1":       -2.5, "y1":    -3.3375, "x2":       -2.5, "y2":     -4.396, "width":   0.2, "layer": 31 },
     { "x1":  -23.67725, "y1":       -1.9, "x2":  -17.37725, "y2":       -1.9, "width":   0.2, "layer": 31 },
     { "x1":   -11.3105, "y1":        0.5, "x2":   -12.4105, "y2":       -0.6, "width":   0.2, "layer": 31 },
@@ -170,8 +146,8 @@ V2_TRACKS = [
 ]
 # fmt: on
 
-POSITIONS = {"v1": V1_POSITIONS, "v2": V2_POSITIONS}
-TRACKS = {"v1": None, "v2": V2_TRACKS}
+POSITIONS = {"v1": V1_POSITIONS}
+TRACKS = {"v1": V1_TRACKS}
 
 
 @skidl.subcircuit
@@ -306,10 +282,6 @@ def atmega32u4_au_v1(rows, columns):
     atmega32u4(rows, columns, FOOTPRINTS["v1"])
 
 
-def atmega32u4_au_v2(rows, columns):
-    atmega32u4(rows, columns, FOOTPRINTS["v2"])
-
-
 if __name__ == "__main__":
     import argparse
 
@@ -323,7 +295,7 @@ if __name__ == "__main__":
         "--variant",
         required=False,
         default="v1",
-        choices=["v1", "v2"],
+        choices=["v1"],
         help="Choose variant",
     )
 
