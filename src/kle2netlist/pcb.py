@@ -42,7 +42,7 @@ class Footprint:
         print("{ " + ", ".join(items) + " },")
 
 
-@dataclass
+@dataclass(order=True)
 class Track:
     x1: float
     y1: float
@@ -127,6 +127,7 @@ def get_tracks(board: pcbnew.BOARD) -> List[Track]:
             layer=t.GetLayer(),
         )
         tracks.append(track)
+    tracks.sort()
     return tracks
 
 
