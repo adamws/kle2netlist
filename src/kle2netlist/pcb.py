@@ -67,6 +67,16 @@ class Track:
         print("{ " + ", ".join(items) + " },")
 
 
+@dataclass(order=True)
+class Via:
+    x: float
+    y: float
+
+    @classmethod
+    def fromdict(cls: Type[Via], data: dict) -> Via:
+        return cls(**data)
+
+
 def get_positions(
     board: pcbnew.BOARD, *, ignore_pattern: Optional[re.Pattern] = None
 ) -> List[Footprint]:
@@ -115,6 +125,8 @@ def set_positions(board: pcbnew.BOARD, footprints: List[Footprint]) -> None:
 def get_tracks(board: pcbnew.BOARD) -> List[Track]:
     tracks = []
     for t in board.GetTracks():
+        if t.Type() == pcbnew.PCB_VIA_T:
+            continue
         start = t.GetStart()
         end = t.GetEnd()
         width = t.GetWidth()
@@ -139,6 +151,18 @@ def add_tracks(board: pcbnew.BOARD, tracks: List[Track]) -> None:
         track.SetStart(pcbnew.VECTOR2I_MM(t.x1, t.y1))
         track.SetEnd(pcbnew.VECTOR2I_MM(t.x2, t.y2))
         board.Add(track)
+
+
+def add_vias(board: pcbnew.BOARD, vias: List[Via]) -> None:
+    for v in vias:
+        via = pcbnew.PCB_VIA(board)
+        via.SetViaType(pcbnew.VIATYPE_THROUGH)
+        via.SetStart(pcbnew.VECTOR2I_MM(v.x, v.y))
+        via.SetWidth(pcbnew.FromMM(0.6))
+        via.SetDrill(pcbnew.FromMM(0.4))
+        via.SetTopLayer(pcbnew.F_Cu)
+        via.SetBottomLayer(pcbnew.B_Cu)
+        board.Add(via)
 
 
 def _get_board_path(source: str) -> Tuple[bool, str]:
