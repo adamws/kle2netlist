@@ -52,12 +52,17 @@ def normalize(footprints: List[Footprint], reference: str) -> None:
         fp.y = round(fp.y - origin_y, 6)
 
 
-def set_positions(board: pcbnew.BOARD, footprints: List[Footprint]) -> None:
+def set_positions(
+    board: pcbnew.BOARD,
+    footprints: List[Footprint],
+    *,
+    offset: pcbnew.VECTOR2I = pcbnew.VECTOR2I(0, 0),
+) -> None:
     for f in footprints:
         if fp := board.FindFootprintByReference(f.ref):
             set_side(fp, f.side)
             set_rotation(fp, f.rotation)
-            set_position(fp, pcbnew.VECTOR2I_MM(f.x, f.y))
+            set_position(fp, pcbnew.VECTOR2I_MM(f.x, f.y) + offset)
             reference = fp.Reference()
             reference.SetFPRelativePosition(pcbnew.VECTOR2I_MM(f.ref_x, f.ref_y))
 
@@ -83,21 +88,31 @@ def get_tracks(board: pcbnew.BOARD) -> List[Track]:
     return tracks
 
 
-def add_tracks(board: pcbnew.BOARD, tracks: List[Track]) -> None:
+def add_tracks(
+    board: pcbnew.BOARD,
+    tracks: List[Track],
+    *,
+    offset: pcbnew.VECTOR2I = pcbnew.VECTOR2I(0, 0),
+) -> None:
     for t in tracks:
         track = pcbnew.PCB_TRACK(board)
         track.SetWidth(pcbnew.FromMM(t.width))
         track.SetLayer(t.layer)
-        track.SetStart(pcbnew.VECTOR2I_MM(t.x1, t.y1))
-        track.SetEnd(pcbnew.VECTOR2I_MM(t.x2, t.y2))
+        track.SetStart(pcbnew.VECTOR2I_MM(t.x1, t.y1) + offset)
+        track.SetEnd(pcbnew.VECTOR2I_MM(t.x2, t.y2) + offset)
         board.Add(track)
 
 
-def add_vias(board: pcbnew.BOARD, vias: List[Via]) -> None:
+def add_vias(
+    board: pcbnew.BOARD,
+    vias: List[Via],
+    *,
+    offset: pcbnew.VECTOR2I = pcbnew.VECTOR2I(0, 0),
+) -> None:
     for v in vias:
         via = pcbnew.PCB_VIA(board)
         via.SetViaType(pcbnew.VIATYPE_THROUGH)
-        via.SetStart(pcbnew.VECTOR2I_MM(v.x, v.y))
+        via.SetStart(pcbnew.VECTOR2I_MM(v.x, v.y) + offset)
         via.SetWidth(pcbnew.FromMM(0.6))
         via.SetDrill(pcbnew.FromMM(0.4))
         via.SetTopLayer(pcbnew.F_Cu)
