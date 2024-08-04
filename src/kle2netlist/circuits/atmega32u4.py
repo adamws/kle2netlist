@@ -372,8 +372,8 @@ def atmega32u4(rows, columns, footprints):
         column += uc[assignment_order.pop(0)]
 
 
-def atmega32u4_au_v1(rows, columns):
-    atmega32u4(rows, columns, FOOTPRINTS["v1"])
+def circuit(rows, columns, variant: str):
+    atmega32u4(rows, columns, FOOTPRINTS[variant])
 
 
 if __name__ == "__main__":
@@ -381,10 +381,8 @@ if __name__ == "__main__":
 
     import pcbnew
 
+    from kle2netlist.circuits import ControllerCircuit
     from kle2netlist.pcb import (
-        Footprint,
-        Track,
-        Via,
         add_tracks,
         add_vias,
         set_positions,
@@ -401,20 +399,23 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    variant = args.variant
+    controller_circuit = ControllerCircuit(f"atmega32u4_au_{args.variant}")
 
     set_skidl_search_path()
 
-    circuit = skidl.Circuit()
-    with circuit:
-        atmega32u4({}, {}, FOOTPRINTS[variant])
+    board_path = f"atmega32u4_au_{args.variant}.kicad_pcb"
+
+    _circuit = skidl.Circuit()
+    with _circuit:
+        controller_circuit.add({}, {})
 
     libraries = ["/usr/share/kicad/footprints"]
-    board_path = f"atmega32u4_au_{variant}.kicad_pcb"
-    circuit.generate_pcb(file_=board_path, fp_libs=libraries)
+    _circuit.generate_pcb(file_=board_path, fp_libs=libraries)
 
     board = pcbnew.LoadBoard(board_path)
-    set_positions(board, [Footprint.fromdict(d) for d in POSITIONS[variant]])
-    add_tracks(board, [Track.fromdict(d) for d in TRACKS[variant]])
-    add_vias(board, [Via.fromdict(d) for d in VIAS[variant]])
+
+    set_positions(board, controller_circuit.positions())
+    add_tracks(board, controller_circuit.tracks())
+    add_vias(board, controller_circuit.vias())
+
     pcbnew.SaveBoard(board_path, board)

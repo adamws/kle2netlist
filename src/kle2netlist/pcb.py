@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import json
 import re
-from dataclasses import asdict, dataclass, fields
-from typing import List, Optional, Tuple, Type
+from dataclasses import asdict
+from typing import List, Optional, Tuple
 
 import pcbnew
 from kbplacer.board_modifier import (
@@ -13,68 +13,8 @@ from kbplacer.board_modifier import (
     set_rotation,
     set_side,
 )
-from kbplacer.element_position import Side
 
-
-@dataclass
-class Footprint:
-    ref: str
-    x: float
-    y: float
-    rotation: float
-    side: Side
-    ref_x: float
-    ref_y: float
-
-    @classmethod
-    def fromdict(cls: Type[Footprint], data: dict) -> Footprint:
-        return cls(**data)
-
-    def pprint(self) -> None:
-        formats = [">8", "10", "10", "6", ">7", "9", "9"]
-        items = []
-        for f, x in zip(fields(self), formats):
-            value = getattr(self, f.name)
-            if isinstance(value, str):
-                value = '"' + value + '"'
-            format_string = f'"{f.name}": {value:{x}}'
-            items.append(format_string)
-        print("{ " + ", ".join(items) + " },")
-
-
-@dataclass(order=True)
-class Track:
-    x1: float
-    y1: float
-    x2: float
-    y2: float
-    width: float
-    layer: int
-
-    @classmethod
-    def fromdict(cls: Type[Track], data: dict) -> Track:
-        return cls(**data)
-
-    def pprint(self) -> None:
-        formats = ["10", "10", "10", "10", "5", "2"]
-        items = []
-        for f, x in zip(fields(self), formats):
-            value = getattr(self, f.name)
-            if isinstance(value, str):
-                value = '"' + value + '"'
-            format_string = f'"{f.name}": {value:{x}}'
-            items.append(format_string)
-        print("{ " + ", ".join(items) + " },")
-
-
-@dataclass(order=True)
-class Via:
-    x: float
-    y: float
-
-    @classmethod
-    def fromdict(cls: Type[Via], data: dict) -> Via:
-        return cls(**data)
+from kle2netlist.circuits import Footprint, Track, Via
 
 
 def get_positions(
