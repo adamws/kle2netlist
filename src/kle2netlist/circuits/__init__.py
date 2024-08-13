@@ -3,9 +3,10 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass, fields
 from enum import Enum
-from typing import List, Type
+from typing import Dict, List
 
 from kbplacer.element_position import Side
+from skidl import Net
 
 from kle2netlist.circuits import atmega32u4
 
@@ -75,7 +76,7 @@ class ControllerCircuit(str, Enum):
     NONE = "none"
     ATMEGA32U4_AU_V1 = "atmega32u4_au_v1"
 
-    def add(self, rows, columns) -> None:
+    def add(self, rows: Dict[str, Net], columns: Dict[str, Net]) -> None:
         if self == ControllerCircuit.ATMEGA32U4_AU_V1:
             atmega32u4.circuit(rows, columns, "v1")
 

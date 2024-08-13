@@ -1,6 +1,8 @@
 # SPDX-FileCopyrightText: 2024-present adamws <adamws@users.noreply.github.com>
 #
 # SPDX-License-Identifier: MIT
+from typing import Dict
+
 import skidl
 
 ATMEGA32U4AU_PIN_ASSIGN_ORDER = [
@@ -245,7 +247,7 @@ VIAS = {"v1": V1_VIAS}
 
 
 @skidl.subcircuit
-def atmega32u4(rows, columns, footprints):
+def atmega32u4(rows: Dict[str, skidl.Net], columns: Dict[str, skidl.Net], footprints):
     assignment_order = ATMEGA32U4AU_PIN_ASSIGN_ORDER[:]
     num_rows = len(rows)
     num_columns = len(columns)
@@ -372,7 +374,7 @@ def atmega32u4(rows, columns, footprints):
         column += uc[assignment_order.pop(0)]
 
 
-def circuit(rows, columns, variant: str):
+def circuit(rows: Dict[str, skidl.Net], columns: Dict[str, skidl.Net], variant: str):
     atmega32u4(rows, columns, FOOTPRINTS[variant])
 
 
