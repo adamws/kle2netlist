@@ -72,6 +72,9 @@ def get_tracks(board: pcbnew.BOARD) -> List[Track]:
     for t in board.GetTracks():
         if t.Type() == pcbnew.PCB_VIA_T:
             continue
+        # ignore tracks of f'io{i}' nets (those will be stored in separate collection)
+        if t.GetNetname().startswith("io"):
+            continue
         start = t.GetStart()
         end = t.GetEnd()
         width = t.GetWidth()
