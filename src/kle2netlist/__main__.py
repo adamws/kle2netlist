@@ -45,13 +45,20 @@ def main(
     diode_footprint: str = typer.Option(
         "Diode_SMD:D_SOD-123F", "-df", "--diode-footprint", help="Diode footprint"
     ),
-    lib_paths: Optional[List[str]] = typer.Option(
+    # use this feature https://github.com/fastapi/typer/pull/800 when merged:
+    lib_paths: Optional[str] = typer.Option(
         None, "-l", "--lib-path", help="Path to symbol library"
     ),
     controller_circuit: ControllerCircuit = typer.Option(
         ControllerCircuit.NONE,
         "--controller-circuit",
         help="Add microcontroller circuitry",
+    ),
+    # use this feature https://github.com/fastapi/typer/pull/800 when merged:
+    row_column_pin_order: Optional[str] = typer.Option(
+        None,
+        "--row-column-pin-order",
+        help="Comma separated list of microcontroller pins defining order of row/column assignments",
     ),
     version: bool = typer.Option(
         None,
@@ -83,7 +90,10 @@ def main(
             stabilizer_footprint=stabilizer_footprint,
             diode_footprint=diode_footprint,
             controller_circuit=controller_circuit,
-            additional_search_path=lib_paths,
+            additional_search_path=lib_paths.split(",") if lib_paths else None,
+            row_column_pin_order=(
+                row_column_pin_order.split(",") if row_column_pin_order else None
+            ),
         )
 
         generate_netlist(circuit, output)

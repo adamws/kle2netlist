@@ -19,6 +19,7 @@ def build_circuit(
     stabilizer_footprint: str,
     diode_footprint: str,
     controller_circuit: ControllerCircuit = ControllerCircuit.NONE,
+    row_column_pin_order: Optional[List[str]] = None,
     additional_search_path: Optional[List[str]] = None,
 ) -> skidl.Circuit:
     set_skidl_search_path(additional_search_path)
@@ -29,7 +30,7 @@ def build_circuit(
         rows, columns = handle_switch_matrix(
             keyboard, switch_footprint, diode_footprint, stabilizer_footprint
         )
-        controller_circuit.add(rows, columns)
+        controller_circuit.add(rows, columns, row_column_pin_order=row_column_pin_order)
     return circuit
 
 

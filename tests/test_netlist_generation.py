@@ -38,15 +38,34 @@ def assert_netlist(netlist_template, result_file, template_dict):
     result_netlist.close()
 
 
+@pytest.fixture
+def file_isolation(tmpdir, request):
+    def _copy_files(layout_filename, netlist_template) -> None:
+        filename = request.module.__file__
+        test_dir, _ = os.path.splitext(filename)
+
+        if os.path.isdir(test_dir):
+            shutil.copy(f"{test_dir}/{layout_filename}", tmpdir)
+            shutil.copy(f"{test_dir}/{netlist_template}", tmpdir)
+
+    return _copy_files
+
+
 @pytest.mark.parametrize(
-    ("layout_filename", "netlist_template", "controller_circuit"),
+    (
+        "layout_filename",
+        "netlist_template",
+        "controller_circuit",
+        "row_column_pin_order",
+    ),
     [
         # fmt: off
-        ("2x2.json", "2x2.net", ControllerCircuit.NONE),
-        ("2x2.json", "2x2-with-uc.net", ControllerCircuit.ATMEGA32U4_AU_V1),
-        ("2x2-with-alternative-layout.json", "2x2-with-alternative-layout.net", ControllerCircuit.NONE),
-        ("iso-enter.json", "iso-enter.net", ControllerCircuit.NONE),
-        ("empty.json", "empty-with-uc.net", ControllerCircuit.ATMEGA32U4_AU_V1),
+        ("2x2.json", "2x2.net", ControllerCircuit.NONE, None),
+        ("2x2.json", "2x2-with-uc.net", ControllerCircuit.ATMEGA32U4_AU_V1, None),
+        ("2x2.json", "2x2-with-uc-custom-order.net", ControllerCircuit.ATMEGA32U4_AU_V1, ["PD0", "PD1", "PF0", "PF1"]),
+        ("2x2-with-alternative-layout.json", "2x2-with-alternative-layout.net", ControllerCircuit.NONE, None),
+        ("iso-enter.json", "iso-enter.net", ControllerCircuit.NONE, None),
+        ("empty.json", "empty-with-uc.net", ControllerCircuit.ATMEGA32U4_AU_V1, None),
         # fmt: on
     ],
 )
@@ -58,23 +77,12 @@ class TestNetlistGeneration:
         "stabilizer_footprint_2u": "PCM_lib2:ST_2.00u",
     }
 
-    @pytest.fixture
-    def file_isolation(self, tmpdir, request):
-        def _copy_files(layout_filename, netlist_template) -> None:
-            filename = request.module.__file__
-            test_dir, _ = os.path.splitext(filename)
-
-            if os.path.isdir(test_dir):
-                shutil.copy(f"{test_dir}/{layout_filename}", tmpdir)
-                shutil.copy(f"{test_dir}/{netlist_template}", tmpdir)
-
-        return _copy_files
-
     def test_api(
         self,
         layout_filename,
         netlist_template,
         controller_circuit,
+        row_column_pin_order,
         file_isolation,
         tmpdir,
     ) -> None:
@@ -87,6 +95,7 @@ class TestNetlistGeneration:
             stabilizer_footprint="PCM_lib2:ST_{:.2f}u",
             diode_footprint="Diode_SMD:D_SOD-323F",
             controller_circuit=controller_circuit,
+            row_column_pin_order=row_column_pin_order,
         )
         generate_netlist(circuit, result_netlist_path)
 
@@ -99,6 +108,7 @@ class TestNetlistGeneration:
         layout_filename,
         netlist_template,
         controller_circuit,
+        row_column_pin_order,
         file_isolation,
         tmpdir,
     ) -> None:
@@ -106,16 +116,19 @@ class TestNetlistGeneration:
         result_netlist_path = tmpdir.join("test.net")
 
         # fmt: off
-        result = runner.invoke(app, [
+        args = [
             "--layout", tmpdir.join(layout_filename),
             "--output", result_netlist_path,
             "--switch-footprint", "PCM_lib1:SW_{:.2f}u",
             "--stabilizer-footprint", "PCM_lib2:ST_{:.2f}u",
             "--diode-footprint", "Diode_SMD:D_SOD-323F",
             "--controller-circuit", controller_circuit,
-            ],
-        )
+        ]
         # fmt: on
+        if row_column_pin_order:
+            args.append("--row-column-pin-order")
+            args.append(",".join(row_column_pin_order))
+        result = runner.invoke(app, args)
         assert result.exit_code == 0
 
         assert_netlist(

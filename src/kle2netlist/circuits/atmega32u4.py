@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2024-present adamws <adamws@users.noreply.github.com>
 #
 # SPDX-License-Identifier: MIT
-from typing import Dict
+from typing import Dict, List, Optional
 
 import skidl
 
@@ -247,8 +247,13 @@ VIAS = {"v1": V1_VIAS}
 
 
 @skidl.subcircuit
-def atmega32u4(rows: Dict[str, skidl.Net], columns: Dict[str, skidl.Net], footprints):
-    assignment_order = ATMEGA32U4AU_PIN_ASSIGN_ORDER[:]
+def atmega32u4(
+    rows: Dict[str, skidl.Net],
+    columns: Dict[str, skidl.Net],
+    footprints,
+    row_column_pin_order: List[str],
+):
+    assignment_order = row_column_pin_order[:]
     num_rows = len(rows)
     num_columns = len(columns)
     num_pins = len(assignment_order)
@@ -369,13 +374,22 @@ def atmega32u4(rows: Dict[str, skidl.Net], columns: Dict[str, skidl.Net], footpr
     gnd += button[1]
 
     for _, row in rows.items():
-        row += uc[assignment_order.pop(0)]
+        pin = assignment_order.pop(0)
+        row += uc[pin]
     for _, column in columns.items():
         column += uc[assignment_order.pop(0)]
 
 
-def circuit(rows: Dict[str, skidl.Net], columns: Dict[str, skidl.Net], variant: str):
-    atmega32u4(rows, columns, FOOTPRINTS[variant])
+def circuit(
+    rows: Dict[str, skidl.Net],
+    columns: Dict[str, skidl.Net],
+    variant: str,
+    *,
+    row_column_pin_order: Optional[List[str]] = None,
+):
+    if not row_column_pin_order:
+        row_column_pin_order = ATMEGA32U4AU_PIN_ASSIGN_ORDER
+    atmega32u4(rows, columns, FOOTPRINTS[variant], row_column_pin_order)
 
 
 if __name__ == "__main__":
