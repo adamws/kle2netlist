@@ -116,7 +116,7 @@ def add_vias(
         via = pcbnew.PCB_VIA(board)
         via.SetViaType(pcbnew.VIATYPE_THROUGH)
         via.SetStart(pcbnew.VECTOR2I_MM(v.x, v.y) + offset)
-        via.SetWidth(pcbnew.FromMM(0.6))
+        via.SetWidth(pcbnew.FromMM(0.8))
         via.SetDrill(pcbnew.FromMM(0.4))
         via.SetTopLayer(pcbnew.F_Cu)
         via.SetBottomLayer(pcbnew.B_Cu)
