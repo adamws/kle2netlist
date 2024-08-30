@@ -421,9 +421,12 @@ if __name__ == "__main__":
 
     board_path = f"atmega32u4_au_{args.variant}.kicad_pcb"
 
+    rows = {}
     _circuit = skidl.Circuit()
     with _circuit:
-        controller_circuit.add({}, {})
+        for i in range(0, len(ATMEGA32U4AU_PIN_ASSIGN_ORDER)):
+            rows[f"io{i}"] = skidl.Net(f"io{i}")
+        controller_circuit.add(rows, {})
 
     libraries = ["/usr/share/kicad/footprints"]
     _circuit.generate_pcb(file_=board_path, fp_libs=libraries)
