@@ -29,3 +29,7 @@ templates-svgs variant:
   rm atmega32u4_au_{{variant}}.svg
   firefox ./kicad-templates/atmega32u4_au_{{variant}}.svg
 
+# assumes git-lukaj configured, see:
+# https://github.com/adamws/lukaj?tab=readme-ov-file#git-integration
+template-diff variant:
+  git diff-svg ./kicad-templates/atmega32u4_au_{{variant}}.svg
