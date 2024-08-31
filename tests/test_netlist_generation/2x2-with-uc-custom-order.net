@@ -66,7 +66,7 @@
 #     (sheetpath (names /top/15882548998643781263) (tstamps /top/15882548998643781263)))
     (comp (ref J1)
       (value USB_C_Receptacle_USB2.0_14P)
-      (footprint Connector_USB:USB_C_Receptacle_XKB_U262-16XN-4BVC11)
+      (footprint Connector_USB:USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal)
       (libsource (lib Connector) (part USB_C_Receptacle_USB2.0_14P))
 #     (sheetpath (names /top/4844526346267810741) (tstamps /top/4844526346267810741)))
     (comp (ref R1)

@@ -37,7 +37,7 @@ V1_FOOTPRINTS = {
     "r_template": "Resistor_SMD:R_0603_1608Metric",
     "uc": "Package_DFN_QFN:QFN-44-1EP_7x7mm_P0.5mm_EP5.2x5.2mm",
     "crystal": "Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm",
-    "usb": "Connector_USB:USB_C_Receptacle_XKB_U262-16XN-4BVC11",
+    "usb": "Connector_USB:USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal",
     "esd_protection": "Package_TO_SOT_SMD:SOT-23-6",
     "button": "Button_Switch_SMD:SW_SPST_TL3342",
 }
