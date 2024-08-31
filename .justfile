@@ -22,6 +22,9 @@ positions:
 tracks:
   hatch run kicad:tracks {{template_atmega32u4_au_v1}}
 
+io_tracks:
+  hatch run kicad:io_tracks {{template_atmega32u4_au_v1}}
+
 templates-svgs variant:
   just svg atmega32u4_au_{{variant}}.kicad_pcb
   just svg-mm-to-cm atmega32u4_au_{{variant}}.svg

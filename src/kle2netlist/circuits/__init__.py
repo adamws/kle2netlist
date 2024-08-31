@@ -99,6 +99,15 @@ class ControllerCircuit(str, Enum):
         else:
             return []
 
+    def tracks_fanout(self, pins: List[str]) -> List[Track]:
+        result = []
+        if self == ControllerCircuit.ATMEGA32U4_AU_V1:
+            for pin in pins:
+                tracks = atmega32u4.TRACKS_FANOUT["v1"].get(pin, None)
+                if tracks:
+                    result.extend([Track.fromdict(d) for d in tracks])
+        return result
+
     def vias(self) -> List[Via]:
         if self == ControllerCircuit.ATMEGA32U4_AU_V1:
             return [Via.fromdict(d) for d in atmega32u4.VIAS["v1"]]

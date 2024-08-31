@@ -182,3 +182,4 @@ system-packages = true # for `pcbnew` module
 circuits = "python -m kle2netlist.circuits.atmega32u4 {args}"
 positions = "python -m kle2netlist.pcb --action positions {args}"
 tracks = "python -m kle2netlist.pcb --action tracks {args}"
+io_tracks = "python -m kle2netlist.pcb --action io_tracks {args}"

@@ -225,6 +225,33 @@ V1_TRACKS = [
     { "x1":    28.2415, "y1":   -2.19335, "x2":    28.8065, "y2":   -2.75835, "width":   0.4, "layer": 31 },
     { "x1":    28.8065, "y1":   -6.93835, "x2":    28.8065, "y2":   -2.75835, "width":   0.4, "layer": 31 },
 ]
+V1_TRACKS_FANOUT = {
+    "PB0": [
+        { "x1":    -2.3955, "y1":   5.540304, "x2":    -2.3955, "y2":     7.4445, "width":   0.2, "layer": 31 },
+        { "x1":       -1.0, "y1":     3.3375, "x2":       -1.0, "y2":   4.144804, "width":   0.2, "layer": 31 },
+        { "x1":       -1.0, "y1":   4.144804, "x2":    -2.3955, "y2":   5.540304, "width":   0.2, "layer": 31 },
+    ],
+    "PB1": [
+        { "x1":    -2.7955, "y1":   5.374618, "x2":    -2.7955, "y2":     7.4445, "width":   0.2, "layer": 31 },
+        { "x1":       -1.5, "y1":     3.3375, "x2":       -1.5, "y2":   4.079118, "width":   0.2, "layer": 31 },
+        { "x1":       -1.5, "y1":   4.079118, "x2":    -2.7955, "y2":   5.374618, "width":   0.2, "layer": 31 },
+    ],
+    "PB2": [
+        { "x1":    -3.1955, "y1":   5.208932, "x2":    -3.1955, "y2":     7.4445, "width":   0.2, "layer": 31 },
+        { "x1":       -2.0, "y1":     3.3375, "x2":       -2.0, "y2":   4.013432, "width":   0.2, "layer": 31 },
+        { "x1":       -2.0, "y1":   4.013432, "x2":    -3.1955, "y2":   5.208932, "width":   0.2, "layer": 31 },
+    ],
+    "PB3": [
+        { "x1":    -3.5955, "y1":   5.043246, "x2":    -3.5955, "y2":     7.4445, "width":   0.2, "layer": 31 },
+        { "x1":       -2.5, "y1":     3.3375, "x2":       -2.5, "y2":   3.947746, "width":   0.2, "layer": 31 },
+        { "x1":       -2.5, "y1":   3.947746, "x2":    -3.5955, "y2":   5.043246, "width":   0.2, "layer": 31 },
+    ],
+    "PB4": [
+        { "x1":    -3.9955, "y1":       2.57, "x2":    -3.9955, "y2":     7.4445, "width":   0.2, "layer": 31 },
+        { "x1":    -3.9255, "y1":        2.5, "x2":    -3.9955, "y2":       2.57, "width":   0.2, "layer": 31 },
+        { "x1":    -3.3375, "y1":        2.5, "x2":    -3.9255, "y2":        2.5, "width":   0.2, "layer": 31 },
+    ],
+}
 V1_VIAS = [
     { "x":   -11.3105, "y":        0.5 },
     { "x":    -5.9205, "y":     4.9045 },
@@ -243,6 +270,7 @@ V1_VIAS = [
 
 POSITIONS = {"v1": V1_POSITIONS}
 TRACKS = {"v1": V1_TRACKS}
+TRACKS_FANOUT = {"v1": V1_TRACKS_FANOUT}
 VIAS = {"v1": V1_VIAS}
 
 
@@ -435,6 +463,7 @@ if __name__ == "__main__":
 
     set_positions(board, controller_circuit.positions())
     add_tracks(board, controller_circuit.tracks())
+    add_tracks(board, controller_circuit.tracks_fanout(ATMEGA32U4AU_PIN_ASSIGN_ORDER))
     add_vias(board, controller_circuit.vias())
 
     pcbnew.SaveBoard(board_path, board)

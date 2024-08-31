@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import json
 import re
+from collections import defaultdict
 from dataclasses import asdict
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import pcbnew
 from kbplacer.board_modifier import (
@@ -91,6 +92,32 @@ def get_tracks(board: pcbnew.BOARD) -> List[Track]:
     return tracks
 
 
+def get_tracks_by_net(
+    board: pcbnew.BOARD, *, name_prefix: str = ""
+) -> Dict[str, List[Track]]:
+    tracks: Dict[str, List[Track]] = defaultdict(list)
+    for t in board.GetTracks():
+        if t.Type() == pcbnew.PCB_VIA_T:
+            continue
+        netname = t.GetNetname()
+        if name_prefix == "" or netname.startswith(name_prefix):
+            start = t.GetStart()
+            end = t.GetEnd()
+            width = t.GetWidth()
+            track = Track(
+                x1=pcbnew.ToMM(start.x),
+                y1=pcbnew.ToMM(start.y),
+                x2=pcbnew.ToMM(end.x),
+                y2=pcbnew.ToMM(end.y),
+                width=pcbnew.ToMM(width),
+                layer=t.GetLayer(),
+            )
+            tracks[netname].append(track)
+    for v in tracks.values():
+        v.sort()
+    return tracks
+
+
 def add_tracks(
     board: pcbnew.BOARD,
     tracks: List[Track],
@@ -144,7 +171,10 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Process PCB")
     parser.add_argument(
-        "--action", required=True, default="positions", choices=["positions", "tracks"]
+        "--action",
+        required=True,
+        default="positions",
+        choices=["positions", "tracks", "io_tracks"],
     )
     parser.add_argument("board", type=str, help="Filepath or URL")
 
@@ -173,6 +203,13 @@ if __name__ == "__main__":
         tracks = get_tracks(board)
         for t in tracks:
             t.pprint()
+    elif action == "io_tracks":
+        tracks = get_tracks_by_net(board, name_prefix="io")
+        for net, tracks in tracks.items():
+            # must convert these to pin names when copying to circuit data:
+            print(f"{net}:")
+            for t in tracks:
+                t.pprint()
 
     if remove_later:
         os.remove(pcb_file_path)
