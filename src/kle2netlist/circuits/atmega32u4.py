@@ -53,7 +53,7 @@ V1_POSITIONS = [
     { "ref":   "C6", "x":     5.5095, "y":    -3.3505, "rotation":  -90.0, "side":  "Back", "ref_x":       2.5, "ref_y":       0.0 },
     { "ref":   "C7", "x":    -0.7135, "y":      5.857, "rotation":    0.0, "side":  "Back", "ref_x":      -2.5, "ref_y":       0.0 },
     { "ref":   "C8", "x":        2.5, "y":    5.86335, "rotation":  180.0, "side":  "Back", "ref_x":      -2.5, "ref_y":       0.0 },
-    { "ref":   "J1", "x":    24.4865, "y":   -5.86335, "rotation":    0.0, "side":  "Back", "ref_x":      -4.0, "ref_y":       5.0 },
+    { "ref":   "J1", "x":    24.4865, "y":   -5.86335, "rotation":    0.0, "side":  "Back", "ref_x":       0.0, "ref_y":       1.0 },
     { "ref":   "R1", "x":    17.6355, "y":      3.952, "rotation":    0.0, "side":  "Back", "ref_x":      -2.5, "ref_y":       0.0 },
     { "ref":   "R2", "x":    17.6355, "y":    5.86335, "rotation":    0.0, "side":  "Back", "ref_x":      -2.5, "ref_y":       0.0 },
     { "ref":   "R3", "x":     7.4145, "y":    -3.3505, "rotation":  -90.0, "side":  "Back", "ref_x":       2.5, "ref_y":       0.0 },
