@@ -17,6 +17,13 @@ from kbplacer.board_modifier import (
 
 from kle2netlist.circuits import Footprint, Track, Via
 
+version_match = re.search(r"(\d+)\.(\d+)\.(\d+)", pcbnew.Version())
+KICAD_VERSION = tuple(map(int, version_match.groups())) if version_match else ()
+MIN_KICAD_VERSION = (8, 0, 0)
+
+if KICAD_VERSION < MIN_KICAD_VERSION:
+    raise RuntimeError("Unsupported KiCad version")
+
 
 def get_positions(
     board: pcbnew.BOARD, *, ignore_pattern: Optional[re.Pattern] = None
@@ -85,7 +92,7 @@ def get_tracks(board: pcbnew.BOARD) -> List[Track]:
             x2=pcbnew.ToMM(end.x),
             y2=pcbnew.ToMM(end.y),
             width=pcbnew.ToMM(width),
-            layer=t.GetLayer(),
+            layer=t.GetLayerName(),
         )
         tracks.append(track)
     tracks.sort()
@@ -127,7 +134,7 @@ def add_tracks(
     for t in tracks:
         track = pcbnew.PCB_TRACK(board)
         track.SetWidth(pcbnew.FromMM(t.width))
-        track.SetLayer(t.layer)
+        track.SetLayer(board.GetLayerID(t.layer))
         track.SetStart(pcbnew.VECTOR2I_MM(t.x1, t.y1) + offset)
         track.SetEnd(pcbnew.VECTOR2I_MM(t.x2, t.y2) + offset)
         board.Add(track)
@@ -143,10 +150,14 @@ def add_vias(
         via = pcbnew.PCB_VIA(board)
         via.SetViaType(pcbnew.VIATYPE_THROUGH)
         via.SetStart(pcbnew.VECTOR2I_MM(v.x, v.y) + offset)
-        via.SetWidth(pcbnew.FromMM(0.8))
         via.SetDrill(pcbnew.FromMM(0.4))
         via.SetTopLayer(pcbnew.F_Cu)
         via.SetBottomLayer(pcbnew.B_Cu)
+        if KICAD_VERSION < (9, 0, 0):
+            via.SetWidth(pcbnew.FromMM(0.8))
+        else:
+            for layer in [pcbnew.F_Cu, pcbnew.B_Cu]:
+                via.SetWidth(layer, pcbnew.FromMM(0.8))
         board.Add(via)
 
 

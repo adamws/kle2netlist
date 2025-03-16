@@ -44,7 +44,7 @@ class Track:
     x2: float
     y2: float
     width: float
-    layer: int
+    layer: str
 
     @classmethod
     def fromdict(cls, data: dict):
