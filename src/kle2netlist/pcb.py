@@ -39,12 +39,12 @@ def get_positions(
 
         position = Footprint(
             ref=ref_str,
-            x=pcbnew.ToMM(fp.GetX()),
-            y=pcbnew.ToMM(fp.GetY()),
+            x=fp.GetX(),
+            y=fp.GetY(),
             rotation=get_orientation(fp),
             side=get_side(fp),
-            ref_x=pcbnew.ToMM(reference_position.x),
-            ref_y=pcbnew.ToMM(reference_position.y),
+            ref_x=reference_position.x,
+            ref_y=reference_position.y,
         )
         positions.append(position)
 
@@ -56,8 +56,8 @@ def normalize(footprints: List[Footprint], reference: str) -> None:
     assert len(reference_fp) == 1
     origin_x, origin_y = reference_fp[0].x, reference_fp[0].y
     for fp in footprints:
-        fp.x = round(fp.x - origin_x, 6)
-        fp.y = round(fp.y - origin_y, 6)
+        fp.x = fp.x - origin_x
+        fp.y = fp.y - origin_y
 
 
 def set_positions(
@@ -70,9 +70,9 @@ def set_positions(
         if fp := board.FindFootprintByReference(f.ref):
             set_side(fp, f.side)
             set_rotation(fp, f.rotation)
-            set_position(fp, pcbnew.VECTOR2I_MM(f.x, f.y) + offset)
+            set_position(fp, pcbnew.VECTOR2I(f.x, f.y) + offset)
             reference = fp.Reference()
-            reference.SetFPRelativePosition(pcbnew.VECTOR2I_MM(f.ref_x, f.ref_y))
+            reference.SetFPRelativePosition(pcbnew.VECTOR2I(f.ref_x, f.ref_y))
 
 
 def get_tracks(board: pcbnew.BOARD) -> List[Track]:
@@ -87,11 +87,11 @@ def get_tracks(board: pcbnew.BOARD) -> List[Track]:
         end = t.GetEnd()
         width = t.GetWidth()
         track = Track(
-            x1=pcbnew.ToMM(start.x),
-            y1=pcbnew.ToMM(start.y),
-            x2=pcbnew.ToMM(end.x),
-            y2=pcbnew.ToMM(end.y),
-            width=pcbnew.ToMM(width),
+            x1=start.x,
+            y1=start.y,
+            x2=end.x,
+            y2=end.y,
+            width=width,
             layer=t.GetLayerName(),
         )
         tracks.append(track)
@@ -112,12 +112,12 @@ def get_tracks_by_net(
             end = t.GetEnd()
             width = t.GetWidth()
             track = Track(
-                x1=pcbnew.ToMM(start.x),
-                y1=pcbnew.ToMM(start.y),
-                x2=pcbnew.ToMM(end.x),
-                y2=pcbnew.ToMM(end.y),
-                width=pcbnew.ToMM(width),
-                layer=t.GetLayer(),
+                x1=start.x,
+                y1=start.y,
+                x2=end.x,
+                y2=end.y,
+                width=width,
+                layer=t.GetLayerName(),
             )
             tracks[netname].append(track)
     for v in tracks.values():
@@ -133,10 +133,10 @@ def add_tracks(
 ) -> None:
     for t in tracks:
         track = pcbnew.PCB_TRACK(board)
-        track.SetWidth(pcbnew.FromMM(t.width))
+        track.SetWidth(t.width)
         track.SetLayer(board.GetLayerID(t.layer))
-        track.SetStart(pcbnew.VECTOR2I_MM(t.x1, t.y1) + offset)
-        track.SetEnd(pcbnew.VECTOR2I_MM(t.x2, t.y2) + offset)
+        track.SetStart(pcbnew.VECTOR2I(t.x1, t.y1) + offset)
+        track.SetEnd(pcbnew.VECTOR2I(t.x2, t.y2) + offset)
         board.Add(track)
 
 
@@ -149,7 +149,7 @@ def add_vias(
     for v in vias:
         via = pcbnew.PCB_VIA(board)
         via.SetViaType(pcbnew.VIATYPE_THROUGH)
-        via.SetStart(pcbnew.VECTOR2I_MM(v.x, v.y) + offset)
+        via.SetStart(pcbnew.VECTOR2I(v.x, v.y) + offset)
         via.SetDrill(pcbnew.FromMM(0.4))
         via.SetTopLayer(pcbnew.F_Cu)
         via.SetBottomLayer(pcbnew.B_Cu)
@@ -206,21 +206,21 @@ if __name__ == "__main__":
         json_decoded = json.loads(json_encoded)
         for f in json_decoded:
             f = Footprint.fromdict(f)
-            f.pprint()
+            f.pprint(to_mm=True)
 
         positions = [Footprint.fromdict(d) for d in json_decoded]
         set_positions(board, positions)
     elif action == "tracks":
         tracks = get_tracks(board)
         for t in tracks:
-            t.pprint()
+            t.pprint(to_mm=True)
     elif action == "io_tracks":
         tracks = get_tracks_by_net(board, name_prefix="io")
         for net, tracks in tracks.items():
             # must convert these to pin names when copying to circuit data:
             print(f"{net}:")
             for t in tracks:
-                t.pprint()
+                t.pprint(to_mm=True)
 
     if remove_later:
         os.remove(pcb_file_path)
