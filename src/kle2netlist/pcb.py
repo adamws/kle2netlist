@@ -164,11 +164,10 @@ def normalize(footprints: List[Footprint], reference: str) -> None:
 
 def set_positions(
     board: pcbnew.BOARD,
-    footprints: List[Dict],
+    footprints: List[Footprint],
     *,
     offset: pcbnew.VECTOR2I = pcbnew.VECTOR2I(0, 0),
 ) -> None:
-    footprints = [Footprint.fromdict_mm(d) for d in footprints]
     for f in footprints:
         if fp := board.FindFootprintByReference(f.ref):
             set_side(fp, f.side)
@@ -230,11 +229,10 @@ def get_tracks_by_net(
 
 def add_tracks(
     board: pcbnew.BOARD,
-    tracks: List[Dict],
+    tracks: List[Track],
     *,
     offset: pcbnew.VECTOR2I = pcbnew.VECTOR2I(0, 0),
 ) -> None:
-    tracks = [Track.fromdict_mm(d) for d in tracks]
     for t in tracks:
         track = pcbnew.PCB_TRACK(board)
         track.SetWidth(t.width)
@@ -246,11 +244,10 @@ def add_tracks(
 
 def add_vias(
     board: pcbnew.BOARD,
-    vias: List[Dict],
+    vias: List[Via],
     *,
     offset: pcbnew.VECTOR2I = pcbnew.VECTOR2I(0, 0),
 ) -> None:
-    vias = [Via.fromdict_mm(d) for d in vias]
     for v in vias:
         via = pcbnew.PCB_VIA(board)
         via.SetViaType(pcbnew.VIATYPE_THROUGH)
@@ -313,7 +310,8 @@ if __name__ == "__main__":
             f = Footprint.fromdict(f)
             f.pprint(to_mm=True)
 
-        set_positions(board, json_decoded)
+        footprints = [Footprint.fromdict(d) for d in json_decoded]
+        set_positions(board, footprints)
     elif action == "tracks":
         tracks = get_tracks(board)
         for t in tracks:

@@ -11,6 +11,9 @@ from kle2netlist.pcb import (
     add_tracks,
     add_vias,
     set_positions,
+    Footprint,
+    Track,
+    Via,
 )
 from kle2netlist.skidl import set_skidl_search_path
 
@@ -54,13 +57,19 @@ if __name__ == "__main__":
 
     board = pcbnew.LoadBoard(board_path)
 
-    set_positions(board, circuit.positions(rev))
-    add_tracks(board, circuit.tracks(rev))
+    footprints = [Footprint.fromdict_mm(d) for d in circuit.positions(rev)]
+    set_positions(board, footprints)
+
+    tracks = [Track.fromdict_mm(d) for d in circuit.tracks(rev)]
+    add_tracks(board, tracks)
 
     for pin in circuit.matrix_pins():
         fanout_tracks = circuit.fanout_tracks(rev)
         if tracks := fanout_tracks.get(pin, None):
-            add_tracks(board, tracks)
-    add_vias(board, circuit.vias(rev))
+            fanout_tracks = [Track.fromdict_mm(d) for d in tracks]
+            add_tracks(board, fanout_tracks)
+
+    vias = [Via.fromdict_mm(d) for d in circuit.vias(rev)]
+    add_vias(board, vias)
 
     pcbnew.SaveBoard(board_path, board)

@@ -25,14 +25,14 @@ all-circuits:
   just circuits atmega32u4 v1
   just circuits usb v1
 
-positions:
-  hatch run kicad:positions {{template_atmega32u4_v1}}
+positions template:
+  hatch run kicad:positions {{template}}
 
-tracks:
-  hatch run kicad:tracks {{template_atmega32u4_v1}}
+tracks template:
+  hatch run kicad:tracks {{template}}
 
-io_tracks:
-  hatch run kicad:io_tracks {{template_atmega32u4_v1}}
+io_tracks template:
+  hatch run kicad:io_tracks {{template}}
 
 templates-svgs variant:
   just svg {{variant}}.kicad_pcb
