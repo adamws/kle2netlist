@@ -50,6 +50,15 @@ Options
         <td>atmega32u4_v1:<br>[todo]</td>
         <td align="center"><img src="kicad-templates/atmega32u4_v1.svg"/></td>
     </tr>
+</table>
+
+### Extra circuit templates
+
+<table>
+    <tr>
+        <td style="width:40%" align="center"><b>Name and description</b></td>
+        <td align="center"><b>Layout</b></td>
+    </tr>
     <tr>
         <td>usb_v1:<br>[todo]</td>
         <td align="center"><img src="kicad-templates/usb_v1.svg" width="20%"/></td>
