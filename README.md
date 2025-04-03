@@ -32,7 +32,9 @@ Options
 --stabilizer-footprint  Stabilizer footprint f-string, optional [default: PCM_Mounting_Keyboard_Stabilizer:Stabilizer_Cherry_MX_{:.2f}u]
 --diode-footprint       Diode footprint [default: Diode_SMD:D_SOD-123F]
 --lib-path              Path to symbol library [default: None]
---controller-circuit    Add microcontroller circuitry [default: none]
+--controller-circuit    Name of controller circuit [default: None]
+--extra-circuits        Extra circuits [default: None]
+--row-column-pin-order  Comma separated list of microcontroller pins defining order of row/column assignments [default: None]
 --version               Prints the version of the kle2netlist package.
 --help                  Show this message and exit.
 ```
@@ -45,7 +47,11 @@ Options
         <td align="center"><b>Layout</b></td>
     </tr>
     <tr>
-        <td>atmega32u4_au_v1:<br>[todo]</td>
-        <td><img src="kicad-templates/atmega32u4_au_v1.svg"/></td>
+        <td>atmega32u4_v1:<br>[todo]</td>
+        <td align="center"><img src="kicad-templates/atmega32u4_v1.svg"/></td>
+    </tr>
+    <tr>
+        <td>usb_v1:<br>[todo]</td>
+        <td align="center"><img src="kicad-templates/usb_v1.svg" width="20%"/></td>
     </tr>
 </table>

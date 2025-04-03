@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2024-present adamws <adamws@users.noreply.github.com>
 #
 # SPDX-License-Identifier: MIT
+import re
 from typing import Dict, List, Optional
 
 import skidl
@@ -37,8 +38,6 @@ V1_FOOTPRINTS = {
     "r_template": "Resistor_SMD:R_0603_1608Metric",
     "uc": "Package_DFN_QFN:QFN-44-1EP_7x7mm_P0.5mm_EP5.2x5.2mm",
     "crystal": "Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm",
-    "usb": "Connector_USB:USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal",
-    "esd_protection": "Package_TO_SOT_SMD:SOT-23-6",
     "button": "Button_Switch_SMD:SW_SPST_TL3342",
 }
 FOOTPRINTS = {"v1": V1_FOOTPRINTS}
@@ -53,14 +52,12 @@ V1_POSITIONS = [
     { "ref":   "C6", "x":     5.5095, "y":    -3.3505, "rotation":  -90.0, "side":  "Back", "ref_x":       2.5, "ref_y":       0.0 },
     { "ref":   "C7", "x":    -0.7135, "y":      5.857, "rotation":    0.0, "side":  "Back", "ref_x":      -2.5, "ref_y":       0.0 },
     { "ref":   "C8", "x":        2.5, "y":    5.86335, "rotation":  180.0, "side":  "Back", "ref_x":      -2.5, "ref_y":       0.0 },
-    { "ref":   "J1", "x":    24.4865, "y":   -5.86335, "rotation":    0.0, "side":  "Back", "ref_x":       0.0, "ref_y":       1.0 },
     { "ref":   "R1", "x":    17.6355, "y":      3.952, "rotation":    0.0, "side":  "Back", "ref_x":      -2.5, "ref_y":       0.0 },
     { "ref":   "R2", "x":    17.6355, "y":    5.86335, "rotation":    0.0, "side":  "Back", "ref_x":      -2.5, "ref_y":       0.0 },
     { "ref":   "R3", "x":     7.4145, "y":    -3.3505, "rotation":  -90.0, "side":  "Back", "ref_x":       2.5, "ref_y":       0.0 },
     { "ref":   "R4", "x":    -5.9205, "y":      5.857, "rotation":    0.0, "side":  "Back", "ref_x":      -2.5, "ref_y":       0.0 },
     { "ref":  "RST", "x":      -20.5, "y":        0.0, "rotation":  180.0, "side":  "Back", "ref_x":       0.0, "ref_y":      3.75 },
     { "ref":   "U1", "x":        0.0, "y":        0.0, "rotation":   90.0, "side":  "Back", "ref_x":      2.85, "ref_y":      -5.0 },
-    { "ref":   "U2", "x":    24.4865, "y":      1.285, "rotation":    0.0, "side":  "Back", "ref_x":       0.0, "ref_y":      2.45 },
     { "ref":   "Y1", "x":    -7.9525, "y":        0.5, "rotation":  -90.0, "side":  "Back", "ref_x":       0.0, "ref_y":      -2.5 },
 ]
 V1_TRACKS = [
@@ -171,14 +168,12 @@ V1_TRACKS = [
     { "x1":     5.5095, "y1":       3.55, "x2":        6.8, "y2":       3.55, "width":   0.4, "layer": "B.Cu" },
     { "x1":       5.59, "y1":       7.08, "x2":    -1.4885, "y2":       7.08, "width":   0.4, "layer": "F.Cu" },
     { "x1":     6.7145, "y1":    -4.8755, "x2":     7.4145, "y2":    -4.1755, "width":   0.2, "layer": "B.Cu" },
+    { "x1":        6.8, "y1":        2.0, "x2":     5.5095, "y2":        2.0, "width":   0.4, "layer": "B.Cu" },
     { "x1":        6.8, "y1":       3.55, "x2":        6.8, "y2":       5.87, "width":   0.4, "layer": "F.Cu" },
     { "x1":        6.8, "y1":       3.55, "x2":       8.35, "y2":        2.0, "width":   0.4, "layer": "F.Cu" },
     { "x1":        6.8, "y1":       5.87, "x2":       5.59, "y2":       7.08, "width":   0.4, "layer": "F.Cu" },
     { "x1":     7.3955, "y1":    -5.0745, "x2":       8.35, "y2":      -4.12, "width":   0.4, "layer": "F.Cu" },
-    { "x1":       7.78, "y1":        2.0, "x2":     5.5095, "y2":        2.0, "width":   0.4, "layer": "B.Cu" },
-    { "x1":       8.18, "y1":        1.6, "x2":       7.78, "y2":        2.0, "width":   0.4, "layer": "B.Cu" },
     { "x1":       8.35, "y1":      -4.12, "x2":       8.35, "y2":        2.0, "width":   0.4, "layer": "F.Cu" },
-    { "x1":       8.35, "y1":        2.0, "x2":   20.70912, "y2":        2.0, "width":   0.4, "layer": "F.Cu" },
     { "x1":      15.32, "y1":       4.68, "x2":     16.048, "y2":      3.952, "width":   0.2, "layer": "B.Cu" },
     { "x1":      15.33, "y1":       5.08, "x2":   16.11335, "y2":    5.86335, "width":   0.2, "layer": "B.Cu" },
     { "x1":     16.048, "y1":      3.952, "x2":    16.8105, "y2":      3.952, "width":   0.2, "layer": "B.Cu" },
@@ -189,51 +184,7 @@ V1_TRACKS = [
     { "x1":     19.173, "y1":    5.86335, "x2":     19.173, "y2":    5.86068, "width":   0.2, "layer": "B.Cu" },
     { "x1":   19.17568, "y1":      3.952, "x2":   19.90368, "y2":       4.68, "width":   0.2, "layer": "B.Cu" },
     { "x1":   19.90368, "y1":       4.68, "x2":      22.64, "y2":       4.68, "width":   0.2, "layer": "B.Cu" },
-    { "x1":   19.95368, "y1":       5.08, "x2":       24.5, "y2":       5.08, "width":   0.2, "layer": "B.Cu" },
-    { "x1":     19.975, "y1":        1.6, "x2":       8.18, "y2":        1.6, "width":   0.4, "layer": "B.Cu" },
-    { "x1":    20.1665, "y1":   -6.93835, "x2":    20.1665, "y2":   -2.75835, "width":   0.4, "layer": "B.Cu" },
-    { "x1":    20.1665, "y1":   -6.93835, "x2":    28.8065, "y2":   -6.93835, "width":   0.4, "layer": "B.Cu" },
-    { "x1":    20.7315, "y1":   -2.19335, "x2":    20.1665, "y2":   -2.75835, "width":   0.4, "layer": "B.Cu" },
-    { "x1":    21.1365, "y1":   -2.19335, "x2":    20.7315, "y2":   -2.19335, "width":   0.4, "layer": "B.Cu" },
-    { "x1":    21.2865, "y1":     0.2865, "x2":    21.2865, "y2":   -2.19335, "width":   0.4, "layer": "B.Cu" },
-    { "x1":    21.2865, "y1":     0.2865, "x2":    21.2865, "y2":     0.2885, "width":   0.4, "layer": "B.Cu" },
-    { "x1":    21.2865, "y1":     0.2885, "x2":     19.975, "y2":        1.6, "width":   0.4, "layer": "B.Cu" },
-    { "x1":    22.0865, "y1":      -0.25, "x2":    22.0865, "y2":   -2.19335, "width":   0.4, "layer": "B.Cu" },
-    { "x1":    22.0865, "y1":      -0.25, "x2":    22.0865, "y2":    0.62262, "width":   0.4, "layer": "F.Cu" },
-    { "x1":    22.0865, "y1":    0.62262, "x2":   20.70912, "y2":        2.0, "width":   0.4, "layer": "F.Cu" },
-    { "x1":    22.2365, "y1":    -2.9865, "x2":       23.0, "y2":      -3.75, "width":   0.2, "layer": "B.Cu" },
-    { "x1":    22.2365, "y1":   -2.19335, "x2":    22.2365, "y2":    -2.9865, "width":   0.2, "layer": "B.Cu" },
-    { "x1":     22.285, "y1":      1.285, "x2":    21.2865, "y2":     0.2865, "width":   0.4, "layer": "B.Cu" },
-    { "x1":      22.64, "y1":       4.68, "x2":     23.349, "y2":      3.971, "width":   0.2, "layer": "B.Cu" },
-    { "x1":       23.0, "y1":      -3.75, "x2":   26.00485, "y2":      -3.75, "width":   0.2, "layer": "B.Cu" },
-    { "x1":     23.349, "y1":     -0.449, "x2":     23.349, "y2":      0.335, "width":   0.2, "layer": "B.Cu" },
-    { "x1":     23.349, "y1":      1.285, "x2":     22.285, "y2":      1.285, "width":   0.4, "layer": "B.Cu" },
-    { "x1":     23.349, "y1":      3.971, "x2":     23.349, "y2":      2.235, "width":   0.2, "layer": "B.Cu" },
-    { "x1":    23.7365, "y1":   -3.01835, "x2":    23.7365, "y2":   -2.19335, "width":   0.2, "layer": "B.Cu" },
-    { "x1":    23.7365, "y1":   -2.19335, "x2":    23.7365, "y2":    -0.8365, "width":   0.2, "layer": "B.Cu" },
-    { "x1":    23.7365, "y1":    -0.8365, "x2":     23.349, "y2":     -0.449, "width":   0.2, "layer": "B.Cu" },
-    { "x1":   23.96815, "y1":      -3.25, "x2":    23.7365, "y2":   -3.01835, "width":   0.2, "layer": "B.Cu" },
-    { "x1":    24.2365, "y1":   -2.19335, "x2":    24.2365, "y2":   -1.36835, "width":   0.2, "layer": "B.Cu" },
-    { "x1":    24.2365, "y1":   -1.36835, "x2":   24.40485, "y2":       -1.2, "width":   0.2, "layer": "B.Cu" },
-    { "x1":   24.40485, "y1":       -1.2, "x2":   25.06815, "y2":       -1.2, "width":   0.2, "layer": "B.Cu" },
-    { "x1":       24.5, "y1":       5.08, "x2":     25.624, "y2":      3.956, "width":   0.2, "layer": "B.Cu" },
-    { "x1":   24.50485, "y1":      -3.25, "x2":   23.96815, "y2":      -3.25, "width":   0.2, "layer": "B.Cu" },
-    { "x1":    24.7365, "y1":   -3.01835, "x2":   24.50485, "y2":      -3.25, "width":   0.2, "layer": "B.Cu" },
-    { "x1":    24.7365, "y1":   -2.19335, "x2":    24.7365, "y2":   -3.01835, "width":   0.2, "layer": "B.Cu" },
-    { "x1":   25.06815, "y1":       -1.2, "x2":    25.2365, "y2":   -1.36835, "width":   0.2, "layer": "B.Cu" },
-    { "x1":    25.2365, "y1":   -2.19335, "x2":    25.2365, "y2":    -0.8635, "width":   0.2, "layer": "B.Cu" },
-    { "x1":    25.2365, "y1":   -1.36835, "x2":    25.2365, "y2":   -2.19335, "width":   0.2, "layer": "B.Cu" },
-    { "x1":    25.2365, "y1":    -0.8635, "x2":     25.624, "y2":     -0.476, "width":   0.2, "layer": "B.Cu" },
-    { "x1":     25.624, "y1":     -0.476, "x2":     25.624, "y2":      0.335, "width":   0.2, "layer": "B.Cu" },
-    { "x1":     25.624, "y1":      1.285, "x2":    26.4365, "y2":      1.285, "width":   0.4, "layer": "B.Cu" },
-    { "x1":     25.624, "y1":      3.956, "x2":     25.624, "y2":      2.235, "width":   0.2, "layer": "B.Cu" },
-    { "x1":   26.00485, "y1":      -3.75, "x2":    26.7365, "y2":   -3.01835, "width":   0.2, "layer": "B.Cu" },
-    { "x1":    26.4365, "y1":      1.285, "x2":    26.8865, "y2":      0.835, "width":   0.4, "layer": "B.Cu" },
-    { "x1":    26.7365, "y1":   -3.01835, "x2":    26.7365, "y2":   -2.19335, "width":   0.2, "layer": "B.Cu" },
-    { "x1":    26.8865, "y1":      0.835, "x2":    26.8865, "y2":   -2.19335, "width":   0.4, "layer": "B.Cu" },
-    { "x1":    27.8365, "y1":   -2.19335, "x2":    28.2415, "y2":   -2.19335, "width":   0.4, "layer": "B.Cu" },
-    { "x1":    28.2415, "y1":   -2.19335, "x2":    28.8065, "y2":   -2.75835, "width":   0.4, "layer": "B.Cu" },
-    { "x1":    28.8065, "y1":   -6.93835, "x2":    28.8065, "y2":   -2.75835, "width":   0.4, "layer": "B.Cu" },
+    { "x1":   19.95368, "y1":       5.08, "x2":      22.64, "y2":       5.08, "width":   0.2, "layer": "B.Cu" },
 ]
 
 V1_TRACKS_FANOUT = {
@@ -341,8 +292,6 @@ V1_VIAS = [
     { "x":      6.462, "y":    -2.5755 },
     { "x":        6.8, "y":       3.55 },
     { "x":        6.8, "y":        2.0 },
-    { "x":    21.2865, "y":      -0.85 },
-    { "x":    22.0865, "y":      -0.25 },
 ]
 # fmt: on
 
@@ -352,22 +301,32 @@ TRACKS_FANOUT = {"v1": V1_TRACKS_FANOUT}
 VIAS = {"v1": V1_VIAS}
 
 
+def __split_dict(matrix_interface):
+    rows = {}
+    columns = {}
+    for key, value in matrix_interface.items():
+        if re.fullmatch(r"ROW\d+", key):
+            rows[key] = value
+        elif re.fullmatch(r"COL\d+", key):
+            columns[key] = value
+
+    return rows, columns
+
+
 @skidl.subcircuit
 def atmega32u4(
-    rows: Dict[str, skidl.Net],
-    columns: Dict[str, skidl.Net],
-    footprints,
-    row_column_pin_order: List[str],
-):
+    footprints, matrix_interface: skidl.Interface, row_column_pin_order: List[str]
+) -> skidl.Interface:
+    vcc = skidl.Net.fetch("VCC")
+    gnd = skidl.Net.fetch("GND")
+
     assignment_order = row_column_pin_order[:]
-    num_rows = len(rows)
-    num_columns = len(columns)
     num_pins = len(assignment_order)
-    if num_rows + num_columns > num_pins:
+    required_pins = len(matrix_interface)
+    if required_pins > num_pins:
         msg = (
             "Controller circuit with atmega32u4 can't handle requested matrix, "
-            f"available pins: {num_pins}, required: "
-            f"{num_rows} (rows) + {num_columns} (columns)"
+            f"available pins: {num_pins}, required: {required_pins}"
         )
         raise RuntimeError(msg)
 
@@ -391,8 +350,6 @@ def atmega32u4(
         "ATmega32U4-M",
         footprint=footprints["uc"],
     )
-    vcc = skidl.Net("VCC")
-    gnd = skidl.Net("GND")
 
     vcc += uc["UVCC", "VCC", "AVCC", "VBUS"]
     gnd += uc["UGND", "GND"]
@@ -426,34 +383,8 @@ def atmega32u4(
     net_ucap += c8[1], uc["UCAP"]
     gnd += c8[2]
 
-    # usb
-    usb = skidl.Part(
-        "Connector",
-        "USB_C_Receptacle_USB2.0_14P",
-        footprint=footprints["usb"],
-    )
-    esd_protection = skidl.Part(
-        "Power_Protection", "TPD2S017", footprint=footprints["esd_protection"]
-    )
+    # resistors on USB lines
     r1, r2 = R(num_copies=2, value="22")
-
-    vcc += usb["VBUS"], esd_protection["VCC"]
-    gnd += usb["GND", "SHIELD"], esd_protection["GND"]
-
-    net_usb_dm = skidl.Net("usb/D-")
-    net_usb_dm += usb["D-"], esd_protection["CH1In"]
-
-    net_usb_dp = skidl.Net("usb/D+")
-    net_usb_dp += (
-        usb["D+"],
-        esd_protection["CH2Int"],
-    )  # CH2Int -> bug in footprint pin name?
-
-    net_esd_dm = skidl.Net("u2/D-")
-    net_esd_dm += esd_protection["CH1Out"], r1[2]
-
-    net_esd_dp = skidl.Net("u2/D+")
-    net_esd_dp += esd_protection["CH2Out"], r2[2]
 
     net_uc_dm = skidl.Net("mcu/D-")
     net_uc_dm += r1[1], uc["D-"]
@@ -479,69 +410,50 @@ def atmega32u4(
     vcc += r4[2]
     gnd += button[1]
 
-    for _, row in rows.items():
+    rows, columns = __split_dict(matrix_interface)
+    for key in sorted(rows):
         pin = assignment_order.pop(0)
-        row += uc[pin]
-    for _, column in columns.items():
-        column += uc[assignment_order.pop(0)]
+        matrix_interface[key] += uc[pin]
+    for key in sorted(columns):
+        pin = assignment_order.pop(0)
+        matrix_interface[key] += uc[pin]
+
+    return skidl.Interface(
+        usb_io_dm=r1[2],
+        usb_io_dp=r2[2],
+    )
 
 
-def circuit(
-    rows: Dict[str, skidl.Net],
-    columns: Dict[str, skidl.Net],
-    variant: str,
-    *,
+def positions(rev: str):
+    return POSITIONS[rev]
+
+
+def tracks(rev: str):
+    return TRACKS[rev]
+
+
+def fanout_tracks(rev: str):
+    return TRACKS_FANOUT[rev]
+
+
+def vias(rev: str):
+    return VIAS[rev]
+
+
+def matrix_pins():
+    return ATMEGA32U4AU_PIN_ASSIGN_ORDER
+
+
+def add(
+    rev: str,
+    matrix_interface: skidl.Interface,
     row_column_pin_order: Optional[List[str]] = None,
-):
+) -> skidl.Interface:
+    pattern = re.compile(r"^(ROW\d+|COL\d+)$")
+    if not all(pattern.fullmatch(key) for key in matrix_interface):
+        msg = "Unexpected nets in matrix interface found"
+        raise RuntimeError(msg)
     if not row_column_pin_order:
-        row_column_pin_order = ATMEGA32U4AU_PIN_ASSIGN_ORDER
-    atmega32u4(rows, columns, FOOTPRINTS[variant], row_column_pin_order)
+        row_column_pin_order = matrix_pins()
+    return atmega32u4(FOOTPRINTS[rev], matrix_interface, row_column_pin_order)
 
-
-if __name__ == "__main__":
-    import argparse
-
-    import pcbnew
-
-    from kle2netlist.circuits import ControllerCircuit
-    from kle2netlist.pcb import (
-        add_tracks,
-        add_vias,
-        set_positions,
-    )
-    from kle2netlist.skidl import set_skidl_search_path
-
-    parser = argparse.ArgumentParser(description="Generate kicad_pcb templates")
-    parser.add_argument(
-        "--variant",
-        required=False,
-        default="v1",
-        choices=["v1"],
-        help="Choose variant",
-    )
-
-    args = parser.parse_args()
-    controller_circuit = ControllerCircuit(f"atmega32u4_au_{args.variant}")
-
-    set_skidl_search_path()
-
-    board_path = f"atmega32u4_au_{args.variant}.kicad_pcb"
-
-    rows = {}
-    _circuit = skidl.Circuit()
-    with _circuit:
-        for i in range(0, len(ATMEGA32U4AU_PIN_ASSIGN_ORDER)):
-            rows[f"io{i}"] = skidl.Net(f"io{i}")
-        controller_circuit.add(rows, {})
-
-    libraries = ["/usr/share/kicad/footprints"]
-    _circuit.generate_pcb(file_=board_path, fp_libs=libraries)
-
-    board = pcbnew.LoadBoard(board_path)
-
-    set_positions(board, controller_circuit.positions())
-    add_tracks(board, controller_circuit.tracks())
-    add_tracks(board, controller_circuit.tracks_fanout(ATMEGA32U4AU_PIN_ASSIGN_ORDER))
-    add_vias(board, controller_circuit.vias())
-
-    pcbnew.SaveBoard(board_path, board)

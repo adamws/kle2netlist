@@ -1,4 +1,4 @@
-template_atmega32u4_au_v1 := "./atmega32u4_au_v1.kicad_pcb"
+template_atmega32u4_v1 := "./atmega32u4_v1.kicad_pcb"
 pcb_url := "https://raw.githubusercontent.com/ai03-2725/JP60/main/JP60.kicad_pcb"
 kicad_svg_fix := semver_matches(`kicad-cli --version`, ">=9.0.0")
 
@@ -17,28 +17,32 @@ svg kicad_pcb:
     -l F.Cu,B.Cu,F.Silkscreen,B.Silkscreen,Edge.Cuts \
     -o "{{without_extension(kicad_pcb)}}.svg" {{kicad_pcb}}
 
-circuits variant:
-  hatch run kicad:circuits --variant {{variant}}
-  just templates-svgs {{variant}}
+circuits circuit revision:
+  hatch run kicad:circuits --circuit {{circuit}} --rev {{revision}}
+  just templates-svgs {{circuit}}_{{revision}}
+
+all-circuits:
+  just circuits atmega32u4 v1
+  just circuits usb v1
 
 positions:
-  hatch run kicad:positions {{pcb_url}}
+  hatch run kicad:positions {{template_atmega32u4_v1}}
 
 tracks:
-  hatch run kicad:tracks {{template_atmega32u4_au_v1}}
+  hatch run kicad:tracks {{template_atmega32u4_v1}}
 
 io_tracks:
-  hatch run kicad:io_tracks {{template_atmega32u4_au_v1}}
+  hatch run kicad:io_tracks {{template_atmega32u4_v1}}
 
 templates-svgs variant:
-  just svg atmega32u4_au_{{variant}}.kicad_pcb
-  just svg-mm-to-cm atmega32u4_au_{{variant}}.svg
-  if {{kicad_svg_fix}} == "true"; then just svg-fix-area atmega32u4_au_{{variant}}.svg; fi
-  cp atmega32u4_au_{{variant}}.svg ./kicad-templates/
-  rm atmega32u4_au_{{variant}}.svg
-  firefox ./kicad-templates/atmega32u4_au_{{variant}}.svg
+  just svg {{variant}}.kicad_pcb
+  just svg-mm-to-cm {{variant}}.svg
+  if {{kicad_svg_fix}} == "true"; then just svg-fix-area {{variant}}.svg; fi
+  cp {{variant}}.svg ./kicad-templates/
+  rm {{variant}}.svg
+  firefox ./kicad-templates/{{variant}}.svg
 
 # assumes git-lukaj configured, see:
 # https://github.com/adamws/lukaj?tab=readme-ov-file#git-integration
-template-diff variant:
-  git diff-svg ./kicad-templates/atmega32u4_au_{{variant}}.svg
+template-diff circuit revision:
+  git diff-svg ./kicad-templates/{{circuit}}_{{revision}}.svg

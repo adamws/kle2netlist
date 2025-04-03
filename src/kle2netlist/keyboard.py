@@ -102,9 +102,11 @@ def handle_switch_matrix(
     switch_footprint,
     diode_footprint,
     stabilizer_footprint,
-):
+) -> skidl.Interface:
     rows = {}
     columns = {}
+
+    interface = {}
 
     progress: dict[tuple[str, str], list[str]] = defaultdict(list)
     diodes: dict[str, skidl.Part] = {}
@@ -118,9 +120,13 @@ def handle_switch_matrix(
         column_net = f"COL{column}" if column.isdigit() else column
 
         if row not in rows:
-            rows[row] = skidl.Net(row_net)
+            net = skidl.Net(row_net, fixed_name=True)
+            rows[row] = net
+            interface[row_net] = net
         if column not in columns:
-            columns[column] = skidl.Net(column_net)
+            net = skidl.Net(column_net, fixed_name=True)
+            columns[column] = net
+            interface[column_net] = net
 
         position = (row, column)
         layout_option = len(progress[position])
@@ -157,4 +163,4 @@ def handle_switch_matrix(
 
         progress[position].append(switch_reference)
 
-    return rows, columns
+    return skidl.Interface(interface)

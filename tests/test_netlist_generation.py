@@ -9,7 +9,6 @@ import pytest
 from typer.testing import CliRunner
 
 from kle2netlist.__main__ import app
-from kle2netlist.circuits import ControllerCircuit
 from kle2netlist.netlist import build_circuit, generate_netlist
 
 LAYOUT_RUNTIME_ERROR = (
@@ -55,17 +54,17 @@ def file_isolation(tmpdir, request):
     (
         "layout_filename",
         "netlist_template",
-        "controller_circuit",
+        "circuits",
         "row_column_pin_order",
     ),
     [
         # fmt: off
-        ("2x2.json", "2x2.net", ControllerCircuit.NONE, None),
-        ("2x2.json", "2x2-with-uc.net", ControllerCircuit.ATMEGA32U4_AU_V1, None),
-        ("2x2.json", "2x2-with-uc-custom-order.net", ControllerCircuit.ATMEGA32U4_AU_V1, ["PD0", "PD1", "PF0", "PF1"]),
-        ("2x2-with-alternative-layout.json", "2x2-with-alternative-layout.net", ControllerCircuit.NONE, None),
-        ("iso-enter.json", "iso-enter.net", ControllerCircuit.NONE, None),
-        ("empty.json", "empty-with-uc.net", ControllerCircuit.ATMEGA32U4_AU_V1, None),
+        ("2x2.json", "2x2.net", None, None),
+        ("2x2.json", "2x2-with-uc.net", ["atmega32u4", "usb"], None),
+        ("2x2.json", "2x2-with-uc-custom-order.net", ["atmega32u4", "usb"], ["PD0", "PD1", "PF0", "PF1"]),
+        ("2x2-with-alternative-layout.json", "2x2-with-alternative-layout.net", None, None),
+        ("iso-enter.json", "iso-enter.net", None, None),
+        ("empty.json", "empty-with-uc.net", ["atmega32u4", "usb"], None),
         # fmt: on
     ],
 )
@@ -81,7 +80,7 @@ class TestNetlistGeneration:
         self,
         layout_filename,
         netlist_template,
-        controller_circuit,
+        circuits,
         row_column_pin_order,
         file_isolation,
         tmpdir,
@@ -94,7 +93,8 @@ class TestNetlistGeneration:
             switch_footprint="PCM_lib1:SW_{:.2f}u",
             stabilizer_footprint="PCM_lib2:ST_{:.2f}u",
             diode_footprint="Diode_SMD:D_SOD-323F",
-            controller_circuit=controller_circuit,
+            controller_circuit=circuits[0] if circuits else None,
+            extra_circuits=circuits[1:] if circuits and len(circuits) > 1 else None,
             row_column_pin_order=row_column_pin_order,
         )
         generate_netlist(circuit, result_netlist_path)
@@ -107,7 +107,7 @@ class TestNetlistGeneration:
         self,
         layout_filename,
         netlist_template,
-        controller_circuit,
+        circuits,
         row_column_pin_order,
         file_isolation,
         tmpdir,
@@ -122,12 +122,20 @@ class TestNetlistGeneration:
             "--switch-footprint", "PCM_lib1:SW_{:.2f}u",
             "--stabilizer-footprint", "PCM_lib2:ST_{:.2f}u",
             "--diode-footprint", "Diode_SMD:D_SOD-323F",
-            "--controller-circuit", controller_circuit,
         ]
+        if circuits and circuits[0]:
+            args.append("--controller-circuit")
+            args.append(circuits[0])
+        if circuits and len(circuits) > 1:
+            for c in circuits[1:]:
+                args.append("--extra-circuits")
+                args.append(c)
         # fmt: on
         if row_column_pin_order:
             args.append("--row-column-pin-order")
             args.append(",".join(row_column_pin_order))
+
+        args_str = " ".join([f"{a}" for a in args])
         result = runner.invoke(app, args)
         assert result.exit_code == 0
 

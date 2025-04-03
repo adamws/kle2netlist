@@ -178,7 +178,7 @@ exclude_lines = [
 system-packages = true # for `pcbnew` module
 
 [tool.hatch.envs.kicad.scripts]
-circuits = "python -m kle2netlist.circuits.atmega32u4 {args}"
+circuits = "python -m kle2netlist.circuits {args}"
 positions = "python -m kle2netlist.pcb --action positions {args}"
 tracks = "python -m kle2netlist.pcb --action tracks {args}"
 io_tracks = "python -m kle2netlist.pcb --action io_tracks {args}"

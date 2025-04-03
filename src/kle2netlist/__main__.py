@@ -8,7 +8,6 @@ import typer
 from rich.console import Console
 
 from kle2netlist._version import __version__
-from kle2netlist.circuits import ControllerCircuit
 from kle2netlist.netlist import build_circuit, generate_netlist
 
 app = typer.Typer(
@@ -49,10 +48,15 @@ def main(
     lib_paths: Optional[str] = typer.Option(
         None, "-l", "--lib-path", help="Path to symbol library"
     ),
-    controller_circuit: ControllerCircuit = typer.Option(
-        ControllerCircuit.NONE,
+    controller_circuit: Optional[str] = typer.Option(
+        None,
         "--controller-circuit",
-        help="Add microcontroller circuitry",
+        help="Name of controller circuit",
+    ),
+    extra_circuits: Optional[List[str]] = typer.Option(
+        None,
+        "--extra-circuits",
+        help="Extra circuits",
     ),
     # use this feature https://github.com/fastapi/typer/pull/800 when merged:
     row_column_pin_order: Optional[str] = typer.Option(
@@ -90,6 +94,7 @@ def main(
             stabilizer_footprint=stabilizer_footprint,
             diode_footprint=diode_footprint,
             controller_circuit=controller_circuit,
+            extra_circuits=extra_circuits,
             additional_search_path=lib_paths.split(",") if lib_paths else None,
             row_column_pin_order=(
                 row_column_pin_order.split(",") if row_column_pin_order else None

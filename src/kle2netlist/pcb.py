@@ -3,7 +3,8 @@ from __future__ import annotations
 import json
 import re
 from collections import defaultdict
-from dataclasses import asdict
+from dataclasses import asdict, dataclass, fields
+from decimal import ROUND_HALF_EVEN, Decimal
 from typing import Dict, List, Optional, Tuple
 
 import pcbnew
@@ -14,8 +15,7 @@ from kbplacer.board_modifier import (
     set_rotation,
     set_side,
 )
-
-from kle2netlist.circuits import Footprint, Track, Via
+from kbplacer.element_position import Side
 
 version_match = re.search(r"(\d+)\.(\d+)\.(\d+)", pcbnew.Version())
 KICAD_VERSION = tuple(map(int, version_match.groups())) if version_match else ()
@@ -23,6 +23,108 @@ MIN_KICAD_VERSION = (8, 0, 0)
 
 if KICAD_VERSION < MIN_KICAD_VERSION:
     raise RuntimeError("Unsupported KiCad version")
+
+
+def mm_to_nm(mm_str: str) -> int:
+    mm = Decimal(mm_str)
+    nm = mm * Decimal("1000000")
+    nm = nm.quantize(Decimal("1"), rounding=ROUND_HALF_EVEN)
+    return int(nm)
+
+
+def nm_to_mm(nm: int) -> str:
+    mm = Decimal(nm) / Decimal("1000000")
+    mm = mm.quantize(Decimal("0.00001"), rounding=ROUND_HALF_EVEN).normalize()
+    return f"{mm:.1f}" if mm == mm.to_integral() else str(mm)
+
+
+@dataclass
+class Footprint:
+    ref: str
+    x: int
+    y: int
+    rotation: float
+    side: Side
+    ref_x: int
+    ref_y: int
+
+    POS_FIELDS = ["x", "y", "ref_x", "ref_y"]
+
+    @classmethod
+    def fromdict(cls, data: dict):
+        return cls(**data)
+
+    @classmethod
+    def fromdict_mm(cls, data: dict):
+        for field in data:
+            if field in cls.POS_FIELDS:
+                data[field] = mm_to_nm(data[field])
+        return cls(**data)
+
+    def pprint(self, to_mm=False) -> None:
+        formats = [">8", "10", "10", "6", ">7", "9", "9"]
+        items = []
+        for f, x in zip(fields(self), formats):
+            value = getattr(self, f.name)
+            if isinstance(value, str):
+                value = '"' + value + '"'
+            if to_mm and isinstance(value, int):
+                value = nm_to_mm(value)
+            format_string = f'"{f.name}": {value:{x}}'
+            items.append(format_string)
+        print("{ " + ", ".join(items) + " },")
+
+
+@dataclass(order=True)
+class Track:
+    x1: int
+    y1: int
+    x2: int
+    y2: int
+    width: int
+    layer: str
+
+    POS_FIELDS = ["x1", "y1", "x2", "y2", "width"]
+
+    @classmethod
+    def fromdict(cls, data: dict):
+        return cls(**data)
+
+    @classmethod
+    def fromdict_mm(cls, data: dict):
+        for field in data:
+            if field in cls.POS_FIELDS:
+                data[field] = mm_to_nm(data[field])
+        return cls(**data)
+
+    def pprint(self, to_mm=False) -> None:
+        formats = [">10", ">10", ">10", ">10", ">5", "2"]
+        items = []
+        for f, x in zip(fields(self), formats):
+            value = getattr(self, f.name)
+            if isinstance(value, str):
+                value = '"' + value + '"'
+            if to_mm and isinstance(value, int):
+                value = nm_to_mm(value)
+            format_string = f'"{f.name}": {value:{x}}'
+            items.append(format_string)
+        print("{ " + ", ".join(items) + " },")
+
+
+@dataclass(order=True)
+class Via:
+    x: int
+    y: int
+
+    @classmethod
+    def fromdict(cls, data: dict):
+        return cls(**data)
+
+    @classmethod
+    def fromdict_mm(cls, data: dict):
+        for field in data:
+            data[field] = mm_to_nm(data[field])
+        return cls(**data)
 
 
 def get_positions(
@@ -62,10 +164,11 @@ def normalize(footprints: List[Footprint], reference: str) -> None:
 
 def set_positions(
     board: pcbnew.BOARD,
-    footprints: List[Footprint],
+    footprints: List[Dict],
     *,
     offset: pcbnew.VECTOR2I = pcbnew.VECTOR2I(0, 0),
 ) -> None:
+    footprints = [Footprint.fromdict_mm(d) for d in footprints]
     for f in footprints:
         if fp := board.FindFootprintByReference(f.ref):
             set_side(fp, f.side)
@@ -127,10 +230,11 @@ def get_tracks_by_net(
 
 def add_tracks(
     board: pcbnew.BOARD,
-    tracks: List[Track],
+    tracks: List[Dict],
     *,
     offset: pcbnew.VECTOR2I = pcbnew.VECTOR2I(0, 0),
 ) -> None:
+    tracks = [Track.fromdict_mm(d) for d in tracks]
     for t in tracks:
         track = pcbnew.PCB_TRACK(board)
         track.SetWidth(t.width)
@@ -142,10 +246,11 @@ def add_tracks(
 
 def add_vias(
     board: pcbnew.BOARD,
-    vias: List[Via],
+    vias: List[Dict],
     *,
     offset: pcbnew.VECTOR2I = pcbnew.VECTOR2I(0, 0),
 ) -> None:
+    vias = [Via.fromdict_mm(d) for d in vias]
     for v in vias:
         via = pcbnew.PCB_VIA(board)
         via.SetViaType(pcbnew.VIATYPE_THROUGH)
@@ -208,8 +313,7 @@ if __name__ == "__main__":
             f = Footprint.fromdict(f)
             f.pprint(to_mm=True)
 
-        positions = [Footprint.fromdict(d) for d in json_decoded]
-        set_positions(board, positions)
+        set_positions(board, json_decoded)
     elif action == "tracks":
         tracks = get_tracks(board)
         for t in tracks:
