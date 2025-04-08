@@ -115,6 +115,10 @@ class Track:
 class Via:
     x: int
     y: int
+    width: int
+    hole: int
+
+    POS_FIELDS = ["x", "y", "width", "hole"]
 
     @classmethod
     def fromdict(cls, data: dict):
@@ -125,6 +129,19 @@ class Via:
         for field in data:
             data[field] = mm_to_nm(data[field])
         return cls(**data)
+
+    def pprint(self, to_mm=False) -> None:
+        formats = [">10", ">10", ">10", ">10"]
+        items = []
+        for f, x in zip(fields(self), formats):
+            value = getattr(self, f.name)
+            if isinstance(value, str):
+                value = '"' + value + '"'
+            if to_mm and isinstance(value, int):
+                value = nm_to_mm(value)
+            format_string = f'"{f.name}": {value:{x}}'
+            items.append(format_string)
+        print("{ " + ", ".join(items) + " },")
 
 
 def get_positions(
@@ -242,6 +259,25 @@ def add_tracks(
         board.Add(track)
 
 
+def get_vias(board: pcbnew.BOARD) -> List[Via]:
+    vias = []
+    for t in board.GetTracks():
+        if t.Type() != pcbnew.PCB_VIA_T:
+            continue
+        via = pcbnew.Cast_to_PCB_VIA(t)
+        start = via.GetStart()
+        via_serialized = Via(
+            x=start.x,
+            y=start.y,
+            width=via.GetWidth(),
+            hole=via.GetDrill(),
+
+        )
+        vias.append(via_serialized)
+    vias.sort()
+    return vias
+
+
 def add_vias(
     board: pcbnew.BOARD,
     vias: List[Via],
@@ -252,14 +288,14 @@ def add_vias(
         via = pcbnew.PCB_VIA(board)
         via.SetViaType(pcbnew.VIATYPE_THROUGH)
         via.SetStart(pcbnew.VECTOR2I(v.x, v.y) + offset)
-        via.SetDrill(pcbnew.FromMM(0.4))
+        via.SetDrill(v.hole)
         via.SetTopLayer(pcbnew.F_Cu)
         via.SetBottomLayer(pcbnew.B_Cu)
         if KICAD_VERSION < (9, 0, 0):
-            via.SetWidth(pcbnew.FromMM(0.8))
+            via.SetWidth(v.width)
         else:
             for layer in [pcbnew.F_Cu, pcbnew.B_Cu]:
-                via.SetWidth(layer, pcbnew.FromMM(0.8))
+                via.SetWidth(layer, v.width)
         board.Add(via)
 
 
@@ -287,7 +323,7 @@ if __name__ == "__main__":
         "--action",
         required=True,
         default="positions",
-        choices=["positions", "tracks", "io_tracks"],
+        choices=["positions", "tracks", "io_tracks", "vias"],
     )
     parser.add_argument("board", type=str, help="Filepath or URL")
 
@@ -323,6 +359,10 @@ if __name__ == "__main__":
             print(f"{net}:")
             for t in tracks:
                 t.pprint(to_mm=True)
+    elif action == "vias":
+        vias = get_vias(board)
+        for v in vias:
+            v.pprint(to_mm=True)
 
     if remove_later:
         os.remove(pcb_file_path)

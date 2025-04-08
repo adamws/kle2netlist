@@ -34,6 +34,9 @@ tracks template:
 io_tracks template:
   hatch run kicad:io_tracks {{template}}
 
+vias template:
+  hatch run kicad:vias {{template}}
+
 templates-svgs variant:
   just svg {{variant}}.kicad_pcb
   just svg-mm-to-cm {{variant}}.svg
