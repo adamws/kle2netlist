@@ -60,7 +60,11 @@ Options
         <td align="center"><b>Layout</b></td>
     </tr>
     <tr>
-        <td>usb_v1:<br>[todo]</td>
-        <td align="center"><img src="kicad-templates/usb_v1.svg" width="20%"/></td>
+        <td>usb_minimal:<br>[todo]</td>
+        <td align="center"><img src="kicad-templates/usb_minimal.svg" width="20%"/></td>
+    </tr>
+    <tr>
+        <td>usb_udb_clone:<br>[todo]</td>
+        <td align="center"><img src="kicad-templates/usb_udb_clone.svg" width="40%"/></td>
     </tr>
 </table>

@@ -62,7 +62,7 @@ class Footprint:
         return cls(**data)
 
     def pprint(self, to_mm=False) -> None:
-        formats = [">8", "10", "10", "6", ">7", "9", "9"]
+        formats = [">8", ">10", ">10", "6", ">7", ">9", ">9"]
         items = []
         for f, x in zip(fields(self), formats):
             value = getattr(self, f.name)
@@ -98,7 +98,7 @@ class Track:
         return cls(**data)
 
     def pprint(self, to_mm=False) -> None:
-        formats = [">10", ">10", ">10", ">10", ">5", "2"]
+        formats = [">10", ">10", ">10", ">10", ">10", ">6"]
         items = []
         for f, x in zip(fields(self), formats):
             value = getattr(self, f.name)

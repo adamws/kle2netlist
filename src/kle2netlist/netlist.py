@@ -52,7 +52,7 @@ def build_circuit(
         if extra_circuits:
             for circuit_name in extra_circuits:
                 subcircuit = get_circuit(circuit_name)
-                ret = subcircuit.add("v1")
+                ret = subcircuit.add(subcircuit.default_revision())
                 interfaces.append(ret)
 
         __connect_interfaces(interfaces)
