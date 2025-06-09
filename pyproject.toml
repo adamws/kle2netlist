@@ -179,7 +179,7 @@ system-packages = true # for `pcbnew` module
 
 [tool.hatch.envs.kicad.scripts]
 circuits = "python tools/templates.py {args}"
-positions = "python -m kle2netlist.pcb --action positions {args}"
-tracks = "python -m kle2netlist.pcb --action tracks {args}"
-io_tracks = "python -m kle2netlist.pcb --action io_tracks {args}"
-vias = "python -m kle2netlist.pcb --action vias {args}"
+positions = "python -m kle2netlist.pcb_kicad --action positions {args}"
+tracks = "python -m kle2netlist.pcb_kicad --action tracks {args}"
+io_tracks = "python -m kle2netlist.pcb_kicad --action io_tracks {args}"
+vias = "python -m kle2netlist.pcb_kicad --action vias {args}"

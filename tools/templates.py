@@ -8,12 +8,14 @@ import skidl
 
 from kle2netlist.circuits import get_circuit
 from kle2netlist.pcb import (
-    add_tracks,
-    add_vias,
-    set_positions,
     Footprint,
     Track,
     Via,
+)
+from kle2netlist.pcb_kicad import (
+    add_tracks,
+    add_vias,
+    set_positions,
 )
 from kle2netlist.skidl import set_skidl_search_path
 
