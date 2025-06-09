@@ -4,8 +4,6 @@
 import importlib
 import pkgutil
 
-from skidl import Net
-
 # Dictionary to hold available circuits
 _circuit_modules = {}
 

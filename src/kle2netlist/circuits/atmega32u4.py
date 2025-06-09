@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: MIT
 import re
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 import skidl
 
