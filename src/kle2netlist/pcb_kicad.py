@@ -7,11 +7,10 @@ import json
 import re
 from collections import defaultdict
 from dataclasses import asdict
+from types import ModuleType
 from typing import Dict, List, Optional, Tuple
 
 import pcbnew
-
-from kle2netlist.pcb import Footprint, Track, Via, normalize
 from kbplacer.board_modifier import (
     get_orientation,
     get_side,
@@ -20,6 +19,8 @@ from kbplacer.board_modifier import (
     set_side,
 )
 from kbplacer.element_position import Side
+
+from kle2netlist.pcb import Footprint, Track, Via, normalize
 
 version_match = re.search(r"(\d+)\.(\d+)\.(\d+)", pcbnew.Version())
 KICAD_VERSION = tuple(map(int, version_match.groups())) if version_match else ()
@@ -147,7 +148,6 @@ def get_vias(board: pcbnew.BOARD) -> List[Via]:
             y=start.y,
             width=via.GetWidth(),
             hole=via.GetDrill(),
-
         )
         vias.append(via_serialized)
     vias.sort()
@@ -173,6 +173,27 @@ def add_vias(
             for layer in [pcbnew.F_Cu, pcbnew.B_Cu]:
                 via.SetWidth(layer, v.width)
         board.Add(via)
+
+
+def apply_template(board_path: str, template: ModuleType, template_rev: str) -> None:
+    board = pcbnew.LoadBoard(board_path)
+
+    footprints = [Footprint.fromdict_mm(d) for d in template.positions(template_rev)]
+    set_positions(board, footprints)
+
+    tracks = [Track.fromdict_mm(d) for d in template.tracks(template_rev)]
+    add_tracks(board, tracks)
+
+    for pin in template.matrix_pins():
+        fanout_tracks = template.fanout_tracks(template_rev)
+        if tracks := fanout_tracks.get(pin, None):
+            fanout_tracks = [Track.fromdict_mm(d) for d in tracks]
+            add_tracks(board, fanout_tracks)
+
+    vias = [Via.fromdict_mm(d) for d in template.vias(template_rev)]
+    add_vias(board, vias)
+
+    pcbnew.SaveBoard(board_path, board)
 
 
 def _get_board_path(source: str) -> Tuple[bool, str]:

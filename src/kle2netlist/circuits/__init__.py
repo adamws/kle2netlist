@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: MIT
 import importlib
 import pkgutil
+from types import ModuleType
+from typing import Tuple
 
 # Dictionary to hold available circuits
 _circuit_modules = {}
@@ -18,3 +20,12 @@ def get_circuit(name):
         raise ValueError(f"Unknown circuit: {name}")
 
     return importlib.import_module(_circuit_modules[name])
+
+
+def get_circuit_revision(name: str) -> Tuple[ModuleType, str]:
+    if "," in name:
+        circuit_name, revision = name.split(",")
+        return get_circuit(circuit_name), revision
+    else:
+        template = get_circuit(name)
+        return template, template.default_revision()

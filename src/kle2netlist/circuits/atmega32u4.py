@@ -1,7 +1,6 @@
 # SPDX-FileCopyrightText: 2024-present adamws <adamws@users.noreply.github.com>
 #
 # SPDX-License-Identifier: MIT
-import re
 from typing import List, Optional
 
 import skidl
@@ -558,34 +557,12 @@ TRACKS_FANOUT = {"v1": V1_TRACKS_FANOUT, "v2": V2_TRACKS_FANOUT}
 VIAS = {"v1": V1_VIAS, "v2": V2_VIAS}
 
 
-def __split_dict(matrix_interface):
-    rows = {}
-    columns = {}
-    for key, value in matrix_interface.items():
-        if re.fullmatch(r"ROW\d+", key):
-            rows[key] = value
-        elif re.fullmatch(r"COL\d+", key):
-            columns[key] = value
-
-    return rows, columns
-
-
 @skidl.subcircuit
-def atmega32u4(
-    footprints, matrix_interface: skidl.Interface, row_column_pin_order: List[str]
-) -> skidl.Interface:
+def atmega32u4(footprints, row_column_pin_order: List[str]) -> skidl.Interface:
     vcc = skidl.Net.fetch("VCC")
     gnd = skidl.Net.fetch("GND")
 
     assignment_order = row_column_pin_order[:]
-    num_pins = len(assignment_order)
-    required_pins = len(matrix_interface)
-    if required_pins > num_pins:
-        msg = (
-            "Controller circuit with atmega32u4 can't handle requested matrix, "
-            f"available pins: {num_pins}, required: {required_pins}"
-        )
-        raise RuntimeError(msg)
 
     # create templates
     C = skidl.Part(
@@ -667,18 +644,18 @@ def atmega32u4(
     vcc += r4[2]
     gnd += button[1]
 
-    rows, columns = __split_dict(matrix_interface)
-    for key in sorted(rows):
-        pin = assignment_order.pop(0)
-        matrix_interface[key] += uc[pin]
-    for key in sorted(columns):
-        pin = assignment_order.pop(0)
-        matrix_interface[key] += uc[pin]
-
-    return skidl.Interface(
+    interface = skidl.Interface(
         usb_io_dm=r1[2],
         usb_io_dp=r2[2],
     )
+
+    i = 0
+    while assignment_order:
+        pin = assignment_order.pop(0)
+        interface[f"io{i}"] = uc[pin]
+        i += 1
+
+    return interface
 
 
 def positions(rev: str):
@@ -703,14 +680,12 @@ def matrix_pins():
 
 def add(
     rev: str,
-    matrix_interface: skidl.Interface,
     row_column_pin_order: Optional[List[str]] = None,
 ) -> skidl.Interface:
-    pattern = re.compile(r"^(ROW\d+|COL\d+)$")
-    if not all(pattern.fullmatch(key) for key in matrix_interface):
-        msg = "Unexpected nets in matrix interface found"
-        raise RuntimeError(msg)
     if not row_column_pin_order:
         row_column_pin_order = matrix_pins()
-    return atmega32u4(FOOTPRINTS[rev], matrix_interface, row_column_pin_order)
+    return atmega32u4(FOOTPRINTS[rev], row_column_pin_order)
 
+
+def default_revision() -> str:
+    return "v1"

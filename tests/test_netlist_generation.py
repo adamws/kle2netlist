@@ -9,6 +9,7 @@ import pytest
 from typer.testing import CliRunner
 
 from kle2netlist.__main__ import app
+from kle2netlist.keyboard import load_keyboard
 from kle2netlist.netlist import build_circuit, generate_netlist
 
 LAYOUT_RUNTIME_ERROR = (
@@ -88,8 +89,9 @@ class TestNetlistGeneration:
         file_isolation(layout_filename, netlist_template)
         result_netlist_path = tmpdir.join("test.net")
 
+        keyboard = load_keyboard(tmpdir.join(layout_filename))
         circuit = build_circuit(
-            tmpdir.join(layout_filename),
+            keyboard=keyboard,
             switch_footprint="PCM_lib1:SW_{:.2f}u",
             stabilizer_footprint="PCM_lib2:ST_{:.2f}u",
             diode_footprint="Diode_SMD:D_SOD-323F",
@@ -118,7 +120,7 @@ class TestNetlistGeneration:
         # fmt: off
         args = [
             "--layout", tmpdir.join(layout_filename),
-            "--output", result_netlist_path,
+            "--netlist-output", result_netlist_path,
             "--switch-footprint", "PCM_lib1:SW_{:.2f}u",
             "--stabilizer-footprint", "PCM_lib2:ST_{:.2f}u",
             "--diode-footprint", "Diode_SMD:D_SOD-323F",
@@ -158,7 +160,7 @@ def test_no_fstring_footprint(tmpdir, request):
 
     result_netlist_path = str(tmpdir.join("test.net"))
     circuit = build_circuit(
-        tmpdir.join(layout_filename),
+        keyboard=load_keyboard(tmpdir.join(layout_filename)),
         switch_footprint="PCM_lib1:SW",
         stabilizer_footprint="",
         diode_footprint="Diode_SMD:D_SOD-323F",
@@ -191,7 +193,7 @@ def test_wrongly_annotated_layouts(layout, expected_exception, exception_match, 
 
     with pytest.raises(expected_exception, match=exception_match):
         build_circuit(
-            layout_file,
+            keyboard=load_keyboard(layout_file),
             switch_footprint="PCM_lib1:SW_{:.2f}u",
             stabilizer_footprint="PCM_lib2:ST_{:.2f}u",
             diode_footprint="Diode_SMD:D_SOD-323F",
@@ -236,7 +238,7 @@ def test_add_stabilizer(width, expected_key, expected_stabilizer, request, tmpdi
 
     result_netlist_path = str(tmpdir.join("test.net"))
     circuit = build_circuit(
-        layout_file,
+        keyboard=load_keyboard(layout_file),
         switch_footprint="PCM_lib1:SW_{:.2f}u",
         stabilizer_footprint="PCM_lib2:ST_{:.2f}u",
         diode_footprint="Diode_SMD:D_SOD-323F",

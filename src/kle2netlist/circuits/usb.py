@@ -1,7 +1,6 @@
 # SPDX-FileCopyrightText: 2025-present adamws <adamws@users.noreply.github.com>
 #
 # SPDX-License-Identifier: MIT
-from typing import Dict, List, Optional
 
 import skidl
 
@@ -182,14 +181,14 @@ def usb_udb_clone() -> skidl.Interface:
     vcc = skidl.Net.fetch("VCC")
     gnd = skidl.Net.fetch("GND")
 
-    usb_footprint = "Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12" # lcsc C165948
+    usb_footprint = "Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12"  # lcsc C165948
     usb = skidl.Part(
         "Connector",
         "USB_C_Receptacle_USB2.0_14P",
         footprint=usb_footprint,
     )
 
-    esd_footprint = "Package_SON:USON-10_2.5x1.0mm_P0.5mm" # lcsc C138714
+    esd_footprint = "Package_SON:USON-10_2.5x1.0mm_P0.5mm"  # lcsc C138714
     esd_protection = skidl.Part(
         "Power_Protection", "TPD4E05U06DQA", footprint=esd_footprint
     )

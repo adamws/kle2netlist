@@ -17,13 +17,36 @@ svg kicad_pcb:
     -l F.Cu,B.Cu,F.Silkscreen,B.Silkscreen,Edge.Cuts \
     -o "{{without_extension(kicad_pcb)}}.svg" {{kicad_pcb}}
 
-circuits circuit revision:
-  hatch run kicad:circuits --circuit {{circuit}} --rev {{revision}}
-  just templates-svgs {{circuit}}_{{revision}}
+circuit_atmega32u4 revision:
+  hatch run kicad:main \
+      --layout tests/test_netlist_generation/empty.json \
+      --switch-footprint "" \
+      --stabilizer-footprint "" \
+      --diode-footprint "" \
+      --controller-circuit atmega32u4,{{revision}} \
+      --extra-circuits dummy_matrix,v1 \
+      --netlist-output atmega32u4_{{revision}}.net \
+      --pcb-output atmega32u4_{{revision}}.kicad_pcb \
+      --force
+  just templates-svgs atmega32u4_{{revision}}
+
+circuit_usb revision:
+  hatch run kicad:main \
+      --layout tests/test_netlist_generation/empty.json \
+      --switch-footprint "" \
+      --stabilizer-footprint "" \
+      --diode-footprint "" \
+      --extra-circuits usb,{{revision}} \
+      --netlist-output usb_{{revision}}.net \
+      --pcb-output usb_{{revision}}.kicad_pcb \
+      --force
+  just templates-svgs usb_{{revision}}
 
 all-circuits:
-  just circuits atmega32u4 v1
-  just circuits usb v1
+  just circuit_atmega32u4 v1
+  just circuit_atmega32u4 v2
+  just circuit_usb minimal
+  just circuit_usb udb_clone
 
 positions template:
   hatch run kicad:positions {{template}}

@@ -8,7 +8,9 @@ import typer
 from rich.console import Console
 
 from kle2netlist._version import __version__
-from kle2netlist.netlist import build_circuit, generate_netlist
+from kle2netlist.circuits import get_circuit_revision
+from kle2netlist.keyboard import load_keyboard
+from kle2netlist.netlist import build_circuit, generate_netlist, generate_pcb
 
 app = typer.Typer(
     name="kle2netlist",
@@ -28,7 +30,9 @@ def version_callback(value: bool):
 @app.command(name="")
 def main(
     layout: Path = typer.Option(..., help="Path to kle layout file"),
-    output: Path = typer.Option("keyboard.net", "--output", help="Output netlist file"),
+    netlist_output: Path = typer.Option(
+        "keyboard.net", "--netlist-output", help="Output netlist file"
+    ),
     switch_footprint: str = typer.Option(
         "PCM_Switch_Keyboard_Cherry_MX:SW_Cherry_MX_PCB_{:.2f}u",
         "-swf",
@@ -64,6 +68,10 @@ def main(
         "--row-column-pin-order",
         help="Comma separated list of microcontroller pins defining order of row/column assignments",
     ),
+    pcb_output: Optional[Path] = typer.Option(
+        None, "--pcb-output", help="Output kicad_pcb file"
+    ),
+    force: bool = typer.Option(False, "--force", help="Override output files"),
     version: bool = typer.Option(
         None,
         "-v",
@@ -75,11 +83,17 @@ def main(
 ):
     """Generates KiCad netlist for a given keyboard layout json file."""
 
-    if output.is_file():
-        console.print(
-            f"[red]error:[/] --output pointing to an existing file: [bold]{output}[/]"
-        )
-        raise typer.Exit(code=1)
+    if not force:
+        if netlist_output.is_file():
+            console.print(
+                f"[red]error:[/] --netlist-output pointing to an existing file: [bold]{netlist_output}[/]"
+            )
+            raise typer.Exit(code=1)
+        if pcb_output and pcb_output.is_file():
+            console.print(
+                f"[red]error:[/] --pcb-output pointing to an existing file: [bold]{pcb_output}[/]"
+            )
+            raise typer.Exit(code=1)
 
     if not Path(layout).is_file():
         console.print(
@@ -88,8 +102,9 @@ def main(
         raise typer.Exit(code=1)
 
     try:
+        keyboard = load_keyboard(layout)
         circuit = build_circuit(
-            layout,
+            keyboard=keyboard,
             switch_footprint=switch_footprint,
             stabilizer_footprint=stabilizer_footprint,
             diode_footprint=diode_footprint,
@@ -101,7 +116,23 @@ def main(
             ),
         )
 
-        generate_netlist(circuit, output)
+        generate_netlist(circuit, netlist_output)
+
+        if pcb_output:
+            from kle2netlist.pcb_kicad import apply_template
+
+            generate_pcb(circuit, pcb_output)
+
+            if controller_circuit:
+                template, revision = get_circuit_revision(controller_circuit)
+                apply_template(pcb_output, template, revision)
+
+            # combining templates (i.e. positions and tracks) for
+            # controller circuit and extra circuits does not work yet
+            if not controller_circuit and extra_circuits and len(extra_circuits) == 1:
+                template, revision = get_circuit_revision(extra_circuits[0])
+                apply_template(pcb_output, template, revision)
+
     except RuntimeError as e:
         console.print(f"[red]error:[/] [bold]{e}[/]")
         raise typer.Exit(code=1)
