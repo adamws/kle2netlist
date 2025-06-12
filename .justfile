@@ -23,8 +23,8 @@ circuit_atmega32u4 revision:
       --switch-footprint "" \
       --stabilizer-footprint "" \
       --diode-footprint "" \
-      --controller-circuit atmega32u4,{{revision}} \
-      --extra-circuits dummy_matrix,v1 \
+      --controller-circuit "atmega32u4;{{revision}}" \
+      --extra-circuits "dummy_matrix;v1" \
       --netlist-output atmega32u4_{{revision}}.net \
       --pcb-output atmega32u4_{{revision}}.kicad_pcb \
       --force
@@ -36,17 +36,33 @@ circuit_usb revision:
       --switch-footprint "" \
       --stabilizer-footprint "" \
       --diode-footprint "" \
-      --extra-circuits usb,{{revision}} \
+      --extra-circuits "usb;{{revision}}" \
       --netlist-output usb_{{revision}}.net \
       --pcb-output usb_{{revision}}.kicad_pcb \
       --force
   just templates-svgs usb_{{revision}}
+
+# demonstrates how to combine controller circuit with extra circuits:
+circuit_atmega32u4_with_usb revision_uc revision_usb offset_usb:
+  hatch run kicad:main \
+      --layout tests/test_netlist_generation/empty.json \
+      --switch-footprint "" \
+      --stabilizer-footprint "" \
+      --diode-footprint "" \
+      --controller-circuit "atmega32u4;{{revision_uc}}" \
+      --extra-circuits "dummy_matrix;v1" \
+      --extra-circuits "usb;{{revision_usb}};{{offset_usb}}" \
+      --netlist-output atmega32u4_{{revision_uc}}_with_usb_{{revision_usb}}.net \
+      --pcb-output atmega32u4_{{revision_uc}}_with_usb_{{revision_usb}}.kicad_pcb \
+      --force
+  just templates-svgs atmega32u4_{{revision_uc}}_with_usb_{{revision_usb}}
 
 all-circuits:
   just circuit_atmega32u4 v1
   just circuit_atmega32u4 v2
   just circuit_usb minimal
   just circuit_usb udb_clone
+  just circuit_atmega32u4_with_usb v1 minimal 24.4865,-5.8633
 
 positions template:
   hatch run kicad:positions {{template}}

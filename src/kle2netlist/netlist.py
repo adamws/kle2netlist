@@ -11,9 +11,9 @@ from typing import List, Optional, Union
 import skidl
 from kbplacer.kle_serial import MatrixAnnotatedKeyboard
 
-from kle2netlist.circuits import get_circuit_revision
 from kle2netlist.keyboard import handle_switch_matrix
 from kle2netlist.skidl import set_skidl_search_path
+from kle2netlist.utilities import get_circuit_revision
 
 
 def __connect_interfaces(interfaces: List[skidl.Interface]) -> None:
@@ -98,7 +98,7 @@ def build_circuit(
             interfaces.append(matrix_interface)
 
         if controller_circuit:
-            controller, revision = get_circuit_revision(controller_circuit)
+            controller, revision, _ = get_circuit_revision(controller_circuit)
             controller_interface = controller.add(revision, row_column_pin_order)
             if keyboard:
                 # if keyboard has been added, pop all io's from controller
@@ -115,7 +115,7 @@ def build_circuit(
 
         if extra_circuits:
             for extra_circuit in extra_circuits:
-                subcircuit, revision = get_circuit_revision(extra_circuit)
+                subcircuit, revision, _ = get_circuit_revision(extra_circuit)
                 extra_interface = subcircuit.add(revision)
                 interfaces.append(extra_interface)
 

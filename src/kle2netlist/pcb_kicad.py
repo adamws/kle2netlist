@@ -8,7 +8,7 @@ import re
 from collections import defaultdict
 from dataclasses import asdict
 from types import ModuleType
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 import pcbnew
 from kbplacer.board_modifier import (
@@ -20,7 +20,7 @@ from kbplacer.board_modifier import (
 )
 from kbplacer.element_position import Side
 
-from kle2netlist.pcb import Footprint, Track, Via, normalize
+from kle2netlist.pcb import Footprint, Track, Via, mm_to_nm, normalize
 
 version_match = re.search(r"(\d+)\.(\d+)\.(\d+)", pcbnew.Version())
 KICAD_VERSION = tuple(map(int, version_match.groups())) if version_match else ()
@@ -175,23 +175,31 @@ def add_vias(
         board.Add(via)
 
 
-def apply_template(board_path: str, template: ModuleType, template_rev: str) -> None:
+def apply_template(
+    board_path: str,
+    template: ModuleType,
+    template_rev: str,
+    *,
+    offset: Union[Tuple[float, float], Tuple[str, str]] = (0, 0),
+) -> None:
     board = pcbnew.LoadBoard(board_path)
 
+    offset = pcbnew.VECTOR2I(mm_to_nm(offset[0]), mm_to_nm(offset[1]))
+
     footprints = [Footprint.fromdict_mm(d) for d in template.positions(template_rev)]
-    set_positions(board, footprints)
+    set_positions(board, footprints, offset=offset)
 
     tracks = [Track.fromdict_mm(d) for d in template.tracks(template_rev)]
-    add_tracks(board, tracks)
+    add_tracks(board, tracks, offset=offset)
 
     for pin in template.matrix_pins():
         fanout_tracks = template.fanout_tracks(template_rev)
         if tracks := fanout_tracks.get(pin, None):
             fanout_tracks = [Track.fromdict_mm(d) for d in tracks]
-            add_tracks(board, fanout_tracks)
+            add_tracks(board, fanout_tracks, offset=offset)
 
     vias = [Via.fromdict_mm(d) for d in template.vias(template_rev)]
-    add_vias(board, vias)
+    add_vias(board, vias, offset=offset)
 
     pcbnew.SaveBoard(board_path, board)
 

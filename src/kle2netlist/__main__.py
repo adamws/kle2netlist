@@ -8,9 +8,9 @@ import typer
 from rich.console import Console
 
 from kle2netlist._version import __version__
-from kle2netlist.circuits import get_circuit_revision
 from kle2netlist.keyboard import load_keyboard
 from kle2netlist.netlist import build_circuit, generate_netlist, generate_pcb
+from kle2netlist.utilities import get_circuit_revision
 
 app = typer.Typer(
     name="kle2netlist",
@@ -124,14 +124,13 @@ def main(
             generate_pcb(circuit, pcb_output)
 
             if controller_circuit:
-                template, revision = get_circuit_revision(controller_circuit)
-                apply_template(pcb_output, template, revision)
+                template, revision, offset = get_circuit_revision(controller_circuit)
+                apply_template(pcb_output, template, revision, offset=offset)
 
-            # combining templates (i.e. positions and tracks) for
-            # controller circuit and extra circuits does not work yet
-            if not controller_circuit and extra_circuits and len(extra_circuits) == 1:
-                template, revision = get_circuit_revision(extra_circuits[0])
-                apply_template(pcb_output, template, revision)
+            if extra_circuits:
+                for extra_circuit in extra_circuits:
+                    template, revision, offset = get_circuit_revision(extra_circuit)
+                    apply_template(pcb_output, template, revision, offset=offset)
 
     except RuntimeError as e:
         console.print(f"[red]error:[/] [bold]{e}[/]")

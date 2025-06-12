@@ -1,9 +1,11 @@
 # SPDX-FileCopyrightText: 2024-present adamws <adamws@users.noreply.github.com>
 #
 # SPDX-License-Identifier: MIT
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 import skidl
+
+from kle2netlist.utilities import RefMapper
 
 ATMEGA32U4AU_PIN_ASSIGN_ORDER = [
     "PB0",
@@ -556,6 +558,12 @@ TRACKS = {"v1": V1_TRACKS, "v2": V2_TRACKS}
 TRACKS_FANOUT = {"v1": V1_TRACKS_FANOUT, "v2": V2_TRACKS_FANOUT}
 VIAS = {"v1": V1_VIAS, "v2": V2_VIAS}
 
+# When circuit is instantiated, the final part references might be different
+# than template values because another circuit may have already used them.
+# Update this mapping in `@skidl.subcircuit` function and apply it when
+# positions returned
+POSITIONS_MAPPING = RefMapper()
+
 
 @skidl.subcircuit
 def atmega32u4(footprints, row_column_pin_order: List[str]) -> skidl.Interface:
@@ -644,6 +652,26 @@ def atmega32u4(footprints, row_column_pin_order: List[str]) -> skidl.Interface:
     vcc += r4[2]
     gnd += button[1]
 
+    POSITIONS_MAPPING.update(
+        {
+            "U1": uc,
+            "Y1": crystal,
+            "C1": c1,
+            "C2": c2,
+            "C3": c3,
+            "C4": c4,
+            "C5": c5,
+            "C6": c6,
+            "C7": c7,  # pyright: ignore
+            "C8": c8,  # pyright: ignore
+            "R1": r1,
+            "R2": r2,
+            "R3": r3,
+            "R4": r4,
+            "RST": button,
+        }
+    )
+
     interface = skidl.Interface(
         usb_io_dm=r1[2],
         usb_io_dp=r2[2],
@@ -659,7 +687,7 @@ def atmega32u4(footprints, row_column_pin_order: List[str]) -> skidl.Interface:
 
 
 def positions(rev: str):
-    return POSITIONS[rev]
+    return POSITIONS_MAPPING.apply(POSITIONS[rev])
 
 
 def tracks(rev: str):

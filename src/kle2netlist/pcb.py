@@ -11,12 +11,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass, fields
 from decimal import ROUND_HALF_EVEN, Decimal
-from typing import List
+from typing import List, Union
 
 
-def mm_to_nm(mm_str: str) -> int:
-    mm = Decimal(mm_str)
-    nm = mm * Decimal("1000000")
+def mm_to_nm(mm: Union[str, float]) -> int:
+    nm = Decimal(mm) * Decimal("1000000")
     nm = nm.quantize(Decimal("1"), rounding=ROUND_HALF_EVEN)
     return int(nm)
 
@@ -140,4 +139,3 @@ def normalize(footprints: List[Footprint], reference: str) -> None:
     for fp in footprints:
         fp.x = fp.x - origin_x
         fp.y = fp.y - origin_y
-

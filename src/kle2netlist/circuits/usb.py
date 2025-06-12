@@ -4,6 +4,8 @@
 
 import skidl
 
+from kle2netlist.utilities import RefMapper
+
 # fmt: off
 MINIMAL_POSITIONS = [
     { "ref":   "J1", "x":        0.0, "y":        0.0, "rotation":    0.0, "side":  "Back", "ref_x":       0.0, "ref_y":       1.0 },
@@ -129,6 +131,8 @@ TRACKS = {"minimal": MINIMAL_TRACKS, "udb_clone": UDB_CLONE_TRACKS}
 TRACKS_FANOUT = {"minimal": MINIMAL_TRACKS_FANOUT, "udb_clone": {}}
 VIAS = {"minimal": MINIMAL_VIAS, "udb_clone": UDB_CLONE_VIAS}
 
+POSITIONS_MAPPING = RefMapper()
+
 
 @skidl.subcircuit
 def usb_minimal() -> skidl.Interface:
@@ -165,6 +169,13 @@ def usb_minimal() -> skidl.Interface:
     usb_io_dp = skidl.Net(f"{esd_ref}/D+", fixed_name=True)
     usb_io_dm += esd_protection["CH1Out"]
     usb_io_dp += esd_protection["CH2Out"]
+
+    POSITIONS_MAPPING.update(
+        {
+            "U1": esd_protection,
+            "J1": usb,
+        }
+    )
 
     return skidl.Interface(
         usb_io_dm=usb_io_dm,
@@ -220,6 +231,17 @@ def usb_udb_clone() -> skidl.Interface:
     vcc += d1[2]
     gnd += d1[1]
 
+    POSITIONS_MAPPING.update(
+        {
+            "U1": esd_protection,
+            "J1": usb,
+            "R1": r1,
+            "R2": r2,
+            "F1": f1,
+            "D1": d1,
+        }
+    )
+
     return skidl.Interface(
         usb_io_dm=usb_io_dm,
         usb_io_dp=usb_io_dp,
@@ -227,7 +249,8 @@ def usb_udb_clone() -> skidl.Interface:
 
 
 def positions(rev: str):
-    return POSITIONS[rev]
+    # return POSITIONS[rev]
+    return POSITIONS_MAPPING.apply(POSITIONS[rev])
 
 
 def tracks(rev: str):
