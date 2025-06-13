@@ -129,8 +129,11 @@ def generate_netlist(circuit: skidl.Circuit, output: Union[str, Path]) -> None:
     circuit.generate_netlist(file_=str(output))
 
 
-def generate_pcb(circuit: skidl.Circuit, output: Union[str, Path]) -> None:
+def generate_pcb(
+    circuit: skidl.Circuit, output: Union[str, Path], *, extra_libraries: List[str] = []
+) -> None:
     libraries = ["/usr/share/kicad/footprints"]
+    libraries.extend(extra_libraries)
     circuit.generate_pcb(file_=output, fp_libs=libraries)
 
 
