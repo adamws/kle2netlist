@@ -562,7 +562,7 @@ VIAS = {"v1": V1_VIAS, "v2": V2_VIAS}
 # than template values because another circuit may have already used them.
 # Update this mapping in `@skidl.subcircuit` function and apply it when
 # positions returned
-POSITIONS_MAPPING = RefMapper()
+REFERENCES_MAPPING = RefMapper()
 
 
 @skidl.subcircuit
@@ -652,7 +652,7 @@ def atmega32u4(footprints, row_column_pin_order: List[str]) -> skidl.Interface:
     vcc += r4[2]
     gnd += button[1]
 
-    POSITIONS_MAPPING.update(
+    REFERENCES_MAPPING.update(
         {
             "U1": uc,
             "Y1": crystal,
@@ -687,7 +687,7 @@ def atmega32u4(footprints, row_column_pin_order: List[str]) -> skidl.Interface:
 
 
 def positions(rev: str):
-    return POSITIONS_MAPPING.apply(POSITIONS[rev])
+    return REFERENCES_MAPPING.apply(POSITIONS[rev])
 
 
 def tracks(rev: str):

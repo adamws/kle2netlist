@@ -131,7 +131,7 @@ TRACKS = {"minimal": MINIMAL_TRACKS, "udb_clone": UDB_CLONE_TRACKS}
 TRACKS_FANOUT = {"minimal": MINIMAL_TRACKS_FANOUT, "udb_clone": {}}
 VIAS = {"minimal": MINIMAL_VIAS, "udb_clone": UDB_CLONE_VIAS}
 
-POSITIONS_MAPPING = RefMapper()
+REFERENCES_MAPPING = RefMapper()
 
 
 @skidl.subcircuit
@@ -170,7 +170,7 @@ def usb_minimal() -> skidl.Interface:
     usb_io_dm += esd_protection["CH1Out"]
     usb_io_dp += esd_protection["CH2Out"]
 
-    POSITIONS_MAPPING.update(
+    REFERENCES_MAPPING.update(
         {
             "U1": esd_protection,
             "J1": usb,
@@ -231,7 +231,7 @@ def usb_udb_clone() -> skidl.Interface:
     vcc += d1[2]
     gnd += d1[1]
 
-    POSITIONS_MAPPING.update(
+    REFERENCES_MAPPING.update(
         {
             "U1": esd_protection,
             "J1": usb,
@@ -249,8 +249,7 @@ def usb_udb_clone() -> skidl.Interface:
 
 
 def positions(rev: str):
-    # return POSITIONS[rev]
-    return POSITIONS_MAPPING.apply(POSITIONS[rev])
+    return REFERENCES_MAPPING.apply(POSITIONS[rev])
 
 
 def tracks(rev: str):
