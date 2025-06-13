@@ -29,7 +29,7 @@ def version_callback(value: bool):
 
 @app.command(name="")
 def main(
-    layout: Path = typer.Option(..., help="Path to kle layout file"),
+    layout: Optional[Path] = typer.Option(None, help="Path to kle layout file"),
     netlist_output: Path = typer.Option(
         "keyboard.net", "--netlist-output", help="Output netlist file"
     ),
@@ -95,14 +95,14 @@ def main(
             )
             raise typer.Exit(code=1)
 
-    if not Path(layout).is_file():
+    if layout and not Path(layout).is_file():
         console.print(
             f"[red]error:[/] invalid --layout option: [bold]{layout}[/] file not found"
         )
         raise typer.Exit(code=1)
 
     try:
-        keyboard = load_keyboard(layout)
+        keyboard = load_keyboard(layout) if layout else None
         circuit = build_circuit(
             keyboard=keyboard,
             switch_footprint=switch_footprint,

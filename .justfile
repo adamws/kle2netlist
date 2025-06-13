@@ -19,7 +19,6 @@ svg kicad_pcb:
 
 circuit_atmega32u4 revision:
   hatch run kicad:main \
-      --layout tests/test_netlist_generation/empty.json \
       --switch-footprint "" \
       --stabilizer-footprint "" \
       --diode-footprint "" \
@@ -32,7 +31,6 @@ circuit_atmega32u4 revision:
 
 circuit_usb revision:
   hatch run kicad:main \
-      --layout tests/test_netlist_generation/empty.json \
       --switch-footprint "" \
       --stabilizer-footprint "" \
       --diode-footprint "" \
@@ -45,7 +43,6 @@ circuit_usb revision:
 # demonstrates how to combine controller circuit with extra circuits:
 circuit_atmega32u4_with_usb revision_uc revision_usb offset_usb:
   hatch run kicad:main \
-      --layout tests/test_netlist_generation/empty.json \
       --switch-footprint "" \
       --stabilizer-footprint "" \
       --diode-footprint "" \

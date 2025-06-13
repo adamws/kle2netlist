@@ -12,6 +12,7 @@ from typing import Dict, List, Optional, Tuple, Union
 
 import pcbnew
 from kbplacer.board_modifier import (
+    get_footprint,
     get_orientation,
     get_side,
     rotate,
@@ -200,11 +201,17 @@ def apply_template(
     tracks = [Track.fromdict_mm(d) for d in template.tracks(template_rev)]
     add_tracks(board, tracks, offset=offset, angle=angle)
 
-    for pin in template.matrix_pins():
-        fanout_tracks = template.fanout_tracks(template_rev)
-        if tracks := fanout_tracks.get(pin, None):
-            fanout_tracks = [Track.fromdict_mm(d) for d in tracks]
-            add_tracks(board, fanout_tracks, offset=offset, angle=angle)
+    # works only for controller circuits which have matrix_pins defined
+    # but could be generalized.
+    fanout_tracks = template.fanout_tracks(template_rev)
+    for item, tracks in fanout_tracks.items():
+        f = get_footprint(board, item)
+        for pin_name, pin_number in template.matrix_pins():
+            pad = f.FindPadByNumber(f"{pin_number}")
+            if pad.GetNetname():
+                if tracks_for_pin := tracks.get(pin_name, None):
+                    fanout_tracks = [Track.fromdict_mm(d) for d in tracks_for_pin]
+                    add_tracks(board, fanout_tracks, offset=offset, angle=angle)
 
     vias = [Via.fromdict_mm(d) for d in template.vias(template_rev)]
     add_vias(board, vias, offset=offset, angle=angle)

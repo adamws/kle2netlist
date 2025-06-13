@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2025-present adamws <adamws@users.noreply.github.com>
 #
 # SPDX-License-Identifier: MIT
+from typing import Any, Dict, List
 
 import skidl
 
@@ -52,7 +53,6 @@ MINIMAL_TRACKS = [
     { "x1":      3.755, "y1":       3.67, "x2":       4.32, "y2":      3.105, "width":   0.4, "layer": "B.Cu" },
     { "x1":       4.32, "y1":     -1.075, "x2":       4.32, "y2":      3.105, "width":   0.4, "layer": "B.Cu" },
 ]
-MINIMAL_TRACKS_FANOUT = {}
 MINIMAL_VIAS = [
     { "x":    -2.4, "y":      5.61335, "width":        0.8, "hole":        0.4 },
 ]
@@ -128,7 +128,6 @@ UDB_CLONE_VIAS = [
 
 POSITIONS = {"minimal": MINIMAL_POSITIONS, "udb_clone": UDB_CLONE_POSITIONS}
 TRACKS = {"minimal": MINIMAL_TRACKS, "udb_clone": UDB_CLONE_TRACKS}
-TRACKS_FANOUT = {"minimal": MINIMAL_TRACKS_FANOUT, "udb_clone": {}}
 VIAS = {"minimal": MINIMAL_VIAS, "udb_clone": UDB_CLONE_VIAS}
 
 REFERENCES_MAPPING = RefMapper()
@@ -252,7 +251,7 @@ def positions(rev: str):
     return REFERENCES_MAPPING.apply(POSITIONS[rev])
 
 
-def tracks(rev: str):
+def tracks(rev: str) -> List[Dict[str, Any]]:
     return TRACKS[rev]
 
 
