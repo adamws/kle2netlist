@@ -14,6 +14,7 @@ import pcbnew
 from kbplacer.board_modifier import (
     get_orientation,
     get_side,
+    rotate,
     set_position,
     set_rotation,
     set_side,
@@ -61,6 +62,7 @@ def set_positions(
     footprints: List[Footprint],
     *,
     offset: pcbnew.VECTOR2I = pcbnew.VECTOR2I(0, 0),
+    angle: float = 0,
 ) -> None:
     for f in footprints:
         if fp := board.FindFootprintByReference(f.ref):
@@ -69,6 +71,7 @@ def set_positions(
             set_position(fp, pcbnew.VECTOR2I(f.x, f.y) + offset)
             reference = fp.Reference()
             reference.SetFPRelativePosition(pcbnew.VECTOR2I(f.ref_x, f.ref_y))
+            rotate(fp, offset, angle)
 
 
 def get_tracks(board: pcbnew.BOARD) -> List[Track]:
@@ -126,6 +129,7 @@ def add_tracks(
     tracks: List[Track],
     *,
     offset: pcbnew.VECTOR2I = pcbnew.VECTOR2I(0, 0),
+    angle: float = 0,
 ) -> None:
     for t in tracks:
         track = pcbnew.PCB_TRACK(board)
@@ -133,6 +137,7 @@ def add_tracks(
         track.SetLayer(board.GetLayerID(t.layer))
         track.SetStart(pcbnew.VECTOR2I(t.x1, t.y1) + offset)
         track.SetEnd(pcbnew.VECTOR2I(t.x2, t.y2) + offset)
+        rotate(track, offset, angle)
         board.Add(track)
 
 
@@ -159,6 +164,7 @@ def add_vias(
     vias: List[Via],
     *,
     offset: pcbnew.VECTOR2I = pcbnew.VECTOR2I(0, 0),
+    angle: float = 0,
 ) -> None:
     for v in vias:
         via = pcbnew.PCB_VIA(board)
@@ -172,6 +178,7 @@ def add_vias(
         else:
             for layer in [pcbnew.F_Cu, pcbnew.B_Cu]:
                 via.SetWidth(layer, v.width)
+        rotate(via, offset, angle)
         board.Add(via)
 
 
@@ -181,25 +188,26 @@ def apply_template(
     template_rev: str,
     *,
     offset: Union[Tuple[float, float], Tuple[str, str]] = (0, 0),
+    angle: float = 0,
 ) -> None:
     board = pcbnew.LoadBoard(board_path)
 
     offset = pcbnew.VECTOR2I(mm_to_nm(offset[0]), mm_to_nm(offset[1]))
 
     footprints = [Footprint.fromdict_mm(d) for d in template.positions(template_rev)]
-    set_positions(board, footprints, offset=offset)
+    set_positions(board, footprints, offset=offset, angle=angle)
 
     tracks = [Track.fromdict_mm(d) for d in template.tracks(template_rev)]
-    add_tracks(board, tracks, offset=offset)
+    add_tracks(board, tracks, offset=offset, angle=angle)
 
     for pin in template.matrix_pins():
         fanout_tracks = template.fanout_tracks(template_rev)
         if tracks := fanout_tracks.get(pin, None):
             fanout_tracks = [Track.fromdict_mm(d) for d in tracks]
-            add_tracks(board, fanout_tracks, offset=offset)
+            add_tracks(board, fanout_tracks, offset=offset, angle=angle)
 
     vias = [Via.fromdict_mm(d) for d in template.vias(template_rev)]
-    add_vias(board, vias, offset=offset)
+    add_vias(board, vias, offset=offset, angle=angle)
 
     pcbnew.SaveBoard(board_path, board)
 
