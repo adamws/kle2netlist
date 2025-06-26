@@ -83,12 +83,12 @@ dependencies = [
 [tool.hatch.envs.lint.scripts]
 typing = "mypy --install-types --non-interactive {args:src/kle2netlist tests}"
 style = [
-  "ruff check {args:.}",
+  "ruff check --output-format=concise {args:.}",
   "black --check --diff {args:.}",
 ]
 fmt = [
   "black {args:.}",
-  "ruff check --fix {args:.}",
+  "ruff check --fix --output-format=concise {args:.}",
   "style",
 ]
 all = [
