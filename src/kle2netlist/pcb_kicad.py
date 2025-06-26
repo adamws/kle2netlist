@@ -235,8 +235,11 @@ if __name__ == "__main__":
     import argparse
     import os
     import tempfile
+    from pathlib import Path
 
     import requests
+
+    from kle2netlist.utilities import get_circuit_revision
 
     parser = argparse.ArgumentParser(description="Process PCB")
     parser.add_argument(
@@ -251,6 +254,7 @@ if __name__ == "__main__":
     action = args.action
 
     remove_later, pcb_file_path = _get_board_path(str(args.board))
+    pcb_name = Path(pcb_file_path).stem
     board = pcbnew.LoadBoard(pcb_file_path)
 
     if action == "positions":
@@ -273,12 +277,29 @@ if __name__ == "__main__":
         for t in tracks:
             t.pprint(to_mm=True)
     elif action == "io_tracks":
+        circuit_name = ";".join(pcb_name.split("_"))
+        subcircuit, revision, _ = get_circuit_revision(circuit_name)
         tracks = get_tracks_by_net(board, name_prefix="io")
-        for net, tracks in tracks.items():
+
+        def _natural_key(s):
+            # Split the string into parts: digits become integers, others stay strings
+            return [
+                int(text) if text.isdigit() else text for text in re.split(r"(\d+)", s)
+            ]
+
+        tracks_sorted = dict(
+            sorted(tracks.items(), key=lambda item: _natural_key(item[0]))
+        )
+        pins_default_order = subcircuit.matrix_pins()
+
+        for (net, tracks), pin in zip(tracks_sorted.items(), pins_default_order):
             # must convert these to pin names when copying to circuit data:
-            print(f"{net}:")
+            print(f'"{pin[0]}": [')
+
             for t in tracks:
+                print("    ", end="")
                 t.pprint(to_mm=True)
+            print("],")
     elif action == "vias":
         vias = get_vias(board)
         for v in vias:
