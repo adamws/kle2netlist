@@ -8,7 +8,7 @@ import typer
 from rich.console import Console
 
 from kle2netlist._version import __version__
-from kle2netlist.keyboard import load_keyboard
+from kle2netlist.keyboard import MatrixType, load_keyboard
 from kle2netlist.netlist import build_circuit, generate_netlist, generate_pcb
 from kle2netlist.utilities import get_circuit_revision
 
@@ -68,6 +68,11 @@ def main(
         "--row-column-pin-order",
         help="Comma separated list of microcontroller pins defining order of row/column assignments",
     ),
+    matrix_type: MatrixType = typer.Option(
+        MatrixType.COL2ROW,
+        "--matrix-type",
+        help="Matrix type",
+    ),
     pcb_output: Optional[Path] = typer.Option(
         None, "--pcb-output", help="Output kicad_pcb file"
     ),
@@ -114,6 +119,7 @@ def main(
             row_column_pin_order=(
                 row_column_pin_order.split(",") if row_column_pin_order else None
             ),
+            matrix_type=matrix_type,
         )
 
         generate_netlist(circuit, netlist_output)

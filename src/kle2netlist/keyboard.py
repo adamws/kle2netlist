@@ -6,12 +6,19 @@ from __future__ import annotations
 import bisect
 import json
 from collections import defaultdict
+from enum import Enum
 from pathlib import Path
 from typing import Union
 
 import skidl
 import yaml
 from kbplacer.kle_serial import Key, MatrixAnnotatedKeyboard, get_keyboard
+
+
+class MatrixType(str, Enum):
+    ROW2COL = "ROW2COL"
+    COL2ROW = "COL2ROW"
+    DIRECT = "DIRECT"
 
 
 def load_keyboard(layout_path: Union[str, Path]) -> MatrixAnnotatedKeyboard:
@@ -97,7 +104,7 @@ def add_diode(reference, footprint) -> skidl.Part:
     return skidl.Part("Device", "D", footprint=footprint, ref=reference)
 
 
-def handle_switch_matrix(
+def __handle_matrix_with_diodes(
     keyboard: MatrixAnnotatedKeyboard,
     switch_footprint,
     diode_footprint,
@@ -116,8 +123,12 @@ def handle_switch_matrix(
     for k in keyboard.keys_in_matrix_order():
         row, column = MatrixAnnotatedKeyboard.get_matrix_position(k)
 
+        position = (row, column)
+        layout_option = len(progress[position])
+
         row_net = f"ROW{row}" if row.isdigit() else row
         column_net = f"COL{column}" if column.isdigit() else column
+        switch_net = ""
 
         if row not in rows:
             net = skidl.Net(row_net, fixed_name=True)
@@ -128,8 +139,6 @@ def handle_switch_matrix(
             columns[column] = net
             interface[column_net] = net
 
-        position = (row, column)
-        layout_option = len(progress[position])
         if layout_option == 0:
             switch_reference = f"SW{current_ref}"
             stab_reference = f"ST{current_ref}"
@@ -164,3 +173,72 @@ def handle_switch_matrix(
         progress[position].append(switch_reference)
 
     return skidl.Interface(interface)
+
+
+def __handle_matrix_direct(
+    keyboard: MatrixAnnotatedKeyboard,
+    switch_footprint,
+    stabilizer_footprint,
+) -> skidl.Interface:
+    gnd = skidl.Net.fetch("GND")
+
+    interface = {}
+
+    progress: dict[tuple[str, str], list[str]] = defaultdict(list)
+
+    current_ref = 1
+
+    for k in keyboard.keys_in_matrix_order():
+        row, column = MatrixAnnotatedKeyboard.get_matrix_position(k)
+
+        position = (row, column)
+        layout_option = len(progress[position])
+
+        if layout_option == 0:
+            switch_reference = f"SW{current_ref}"
+            stab_reference = f"ST{current_ref}"
+            current_ref += 1
+            switch_net = switch_reference
+            net = skidl.Net(switch_net, fixed_name=True)
+            interface[switch_net] = net
+        else:
+            default_switch = progress[position][0]
+            default_ref = default_switch[2:]
+            switch_reference = f"SW{default_ref}_{layout_option}"
+            stab_reference = f"ST{default_ref}_{layout_option}"
+            switch_net = default_switch
+
+        switch = add_regular_switch(switch_reference, switch_footprint, k)
+
+        if (
+            stabilizer_footprint
+            and is_width_supported(k)
+            and (k.width >= 2 or k.height >= 2)
+        ):
+            add_stabilizer(stab_reference, stabilizer_footprint, k)
+
+        interface[switch_net] += switch[1]
+        gnd += switch[2]
+
+        progress[position].append(switch_reference)
+
+    return skidl.Interface(interface)
+
+
+def handle_switch_matrix(
+    keyboard: MatrixAnnotatedKeyboard,
+    switch_footprint,
+    diode_footprint,
+    stabilizer_footprint,
+    *,
+    matrix_type: MatrixType = MatrixType.COL2ROW,
+) -> skidl.Interface:
+    if matrix_type == MatrixType.COL2ROW:
+        return __handle_matrix_with_diodes(
+            keyboard, switch_footprint, diode_footprint, stabilizer_footprint
+        )
+    elif matrix_type == MatrixType.ROW2COL:
+        msg = "The `matrix_type` equal `ROW2COL` not supported yet"
+        raise RuntimeError(msg)
+    else:
+        return __handle_matrix_direct(keyboard, switch_footprint, stabilizer_footprint)

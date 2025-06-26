@@ -9,7 +9,7 @@ import pytest
 from typer.testing import CliRunner
 
 from kle2netlist.__main__ import app
-from kle2netlist.keyboard import load_keyboard
+from kle2netlist.keyboard import MatrixType, load_keyboard
 from kle2netlist.netlist import build_circuit, generate_netlist
 
 LAYOUT_RUNTIME_ERROR = (
@@ -60,15 +60,16 @@ def file_isolation(tmpdir, request):
     ),
     [
         # fmt: off
-        ("2x2.json", "2x2.net", None, None),
-        ("2x2.json", "2x2-with-uc.net", ["atmega32u4", "usb"], None),
-        ("2x2.json", "2x2-with-uc-custom-order.net", ["atmega32u4", "usb"], ["PD0", "PD1", "PF0", "PF1"]),
-        ("2x2-with-alternative-layout.json", "2x2-with-alternative-layout.net", None, None),
-        ("iso-enter.json", "iso-enter.net", None, None),
-        ("empty.json", "empty-with-uc.net", ["atmega32u4", "usb"], None),
+        ("2x2.json", "2x2", None, None),
+        ("2x2.json", "2x2-with-uc", ["atmega32u4", "usb"], None),
+        ("2x2.json", "2x2-with-uc-custom-order", ["atmega32u4", "usb"], ["PD0", "PD1", "PF0", "PF1"]),
+        ("2x2-with-alternative-layout.json", "2x2-with-alternative-layout", None, None),
+        ("iso-enter.json", "iso-enter", None, None),
+        ("empty.json", "empty-with-uc", ["atmega32u4", "usb"], None),
         # fmt: on
     ],
 )
+@pytest.mark.parametrize("matrix_type", [MatrixType.COL2ROW, MatrixType.DIRECT])
 class TestNetlistGeneration:
     TEMPLATE_DICT = {
         "switch_footprint_1u": "PCM_lib1:SW_1.00u",
@@ -83,9 +84,14 @@ class TestNetlistGeneration:
         netlist_template,
         circuits,
         row_column_pin_order,
+        matrix_type,
         file_isolation,
         tmpdir,
     ) -> None:
+        if matrix_type == MatrixType.DIRECT:
+            netlist_template = f"{netlist_template}-direct.net"
+        else:
+            netlist_template = f"{netlist_template}.net"
         file_isolation(layout_filename, netlist_template)
         result_netlist_path = tmpdir.join("test.net")
 
@@ -98,6 +104,7 @@ class TestNetlistGeneration:
             controller_circuit=circuits[0] if circuits else None,
             extra_circuits=circuits[1:] if circuits and len(circuits) > 1 else None,
             row_column_pin_order=row_column_pin_order,
+            matrix_type=matrix_type,
         )
         generate_netlist(circuit, result_netlist_path)
 
@@ -111,9 +118,14 @@ class TestNetlistGeneration:
         netlist_template,
         circuits,
         row_column_pin_order,
+        matrix_type,
         file_isolation,
         tmpdir,
     ) -> None:
+        if matrix_type == MatrixType.DIRECT:
+            netlist_template = f"{netlist_template}-direct.net"
+        else:
+            netlist_template = f"{netlist_template}.net"
         file_isolation(layout_filename, netlist_template)
         result_netlist_path = tmpdir.join("test.net")
 
@@ -136,6 +148,9 @@ class TestNetlistGeneration:
         if row_column_pin_order:
             args.append("--row-column-pin-order")
             args.append(",".join(row_column_pin_order))
+
+        args.append("--matrix-type")
+        args.append(matrix_type)
 
         args_str = " ".join([f"{a}" for a in args])
         result = runner.invoke(app, args)

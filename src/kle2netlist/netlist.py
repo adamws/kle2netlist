@@ -11,7 +11,7 @@ from typing import List, Optional, Union
 import skidl
 from kbplacer.kle_serial import MatrixAnnotatedKeyboard
 
-from kle2netlist.keyboard import handle_switch_matrix
+from kle2netlist.keyboard import MatrixType, handle_switch_matrix
 from kle2netlist.skidl import set_skidl_search_path
 from kle2netlist.utilities import get_circuit_revision
 
@@ -37,16 +37,30 @@ def __split_dict(matrix_interface):
     return rows, columns
 
 
+def natural_key(s):
+    # Split the string into parts: digits become integers, others stay strings
+    return [int(text) if text.isdigit() else text for text in re.split(r"(\d+)", s)]
+
+
 def __split_controller_interface(
-    controller_interface: skidl.Interface, matrix_interface: Optional[skidl.Interface]
+    controller_interface: skidl.Interface,
+    matrix_interface: Optional[skidl.Interface],
+    *,
+    matrix_type: MatrixType = MatrixType.COL2ROW,
 ) -> skidl.Interface:
     controller_mapping = {}
     i = 0
 
     if matrix_interface:
-        rows, columns = __split_dict(matrix_interface)
+        if matrix_type == MatrixType.COL2ROW or matrix_type == MatrixType.ROW2COL:
+            rows, columns = __split_dict(matrix_interface)
+            iterable = itertools.chain(sorted(rows), sorted(columns))
+        else:
+            keys = matrix_interface.keys()
+            keys_sorted = sorted(keys, key=lambda item: natural_key(item))
+            iterable = keys_sorted
 
-        for key in itertools.chain(sorted(rows), sorted(columns)):
+        for key in iterable:
             pin = controller_interface.pop(f"io{i}", None)
             if not pin:
                 msg = "Controller circuit with can't handle requested matrix"
@@ -83,6 +97,7 @@ def build_circuit(
     extra_circuits: Optional[List[str]] = None,
     row_column_pin_order: Optional[List[str]] = None,
     additional_search_path: Optional[List[str]] = None,
+    matrix_type: MatrixType = MatrixType.COL2ROW,
 ) -> skidl.Circuit:
     set_skidl_search_path(additional_search_path)
 
@@ -93,7 +108,11 @@ def build_circuit(
         matrix_interface = None
         if keyboard:
             matrix_interface = handle_switch_matrix(
-                keyboard, switch_footprint, diode_footprint, stabilizer_footprint
+                keyboard,
+                switch_footprint,
+                diode_footprint,
+                stabilizer_footprint,
+                matrix_type=matrix_type,
             )
             interfaces.append(matrix_interface)
 
@@ -104,7 +123,7 @@ def build_circuit(
                 # if keyboard has been added, pop all io's from controller
                 # interface and create new matching interface with ROWs/COLs and controller pins
                 controller_matrix_interface = __split_controller_interface(
-                    controller_interface, matrix_interface
+                    controller_interface, matrix_interface, matrix_type=matrix_type
                 )
                 interfaces.append(controller_matrix_interface)
                 __remove_unused_io_from_controller_interface(
