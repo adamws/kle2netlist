@@ -16,7 +16,7 @@ from kle2netlist.skidl import set_skidl_search_path
 from kle2netlist.utilities import get_circuit_revision
 
 
-def __connect_interfaces(interfaces: List[skidl.Interface]) -> None:
+def connect_interfaces(interfaces: List[skidl.Interface]) -> None:
     all_keys = set().union(*interfaces)
     values_by_key = {key: [d.get(key, None) for d in interfaces] for key in all_keys}
     for k, v in values_by_key.items():
@@ -138,7 +138,7 @@ def build_circuit(
                 extra_interface = subcircuit.add(revision)
                 interfaces.append(extra_interface)
 
-        __connect_interfaces(interfaces)
+        connect_interfaces(interfaces)
         circuit.merge_net_names()
 
     return circuit
