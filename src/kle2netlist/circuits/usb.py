@@ -58,8 +58,8 @@ MINIMAL_VIAS = [
 ]
 
 UDB_CLONE_POSITIONS = [
-    { "ref":     "D1", "x":       6.35, "y":      7.042, "rotation":    0.0, "side":  "Back", "ref_x":       0.0, "ref_y":       0.0 },
-    { "ref":     "F1", "x":      7.112, "y":      3.359, "rotation":  -90.0, "side":  "Back", "ref_x":       0.0, "ref_y":       0.0 },
+    { "ref":     "D1", "x":       6.35, "y":      8.342, "rotation":    0.0, "side":  "Back", "ref_x":       0.0, "ref_y":       0.0 },
+    { "ref":     "F1", "x":      7.112, "y":      4.659, "rotation":  -90.0, "side":  "Back", "ref_x":       0.0, "ref_y":       0.0 },
     { "ref":     "J1", "x":        0.0, "y":        0.0, "rotation":    0.0, "side":  "Back", "ref_x":       0.0, "ref_y":       0.0 },
     { "ref":     "R1", "x":     -3.048, "y":      7.281, "rotation":  -90.0, "side":  "Back", "ref_x":       2.5, "ref_y":       0.0 },
     { "ref":     "R2", "x":      3.048, "y":      7.281, "rotation":  -90.0, "side":  "Back", "ref_x":       2.5, "ref_y":       0.0 },
@@ -108,7 +108,7 @@ UDB_CLONE_TRACKS = [
     { "x1":        1.0, "y1":      6.772, "x2":       1.27, "y2":      7.042, "width":      0.254, "layer": "B.Cu" },
     { "x1":       1.27, "y1":      7.042, "x2":       1.27, "y2":      7.423, "width":     0.1524, "layer": "F.Cu" },
     { "x1":       1.27, "y1":      7.423, "x2":     0.7158, "y2":     7.9772, "width":     0.1524, "layer": "F.Cu" },
-    { "x1":        1.5, "y1":      9.005, "x2":      5.134, "y2":      9.005, "width":      0.508, "layer": "B.Cu" },
+    { "x1":        1.5, "y1":     9.6675, "x2":     7.5825, "y2":     9.6675, "width":      0.508, "layer": "B.Cu" },
     { "x1":       1.75, "y1":       6.05, "x2":       1.75, "y2":      4.045, "width":      0.254, "layer": "B.Cu" },
     { "x1":      2.156, "y1":      6.456, "x2":       1.75, "y2":       6.05, "width":      0.254, "layer": "B.Cu" },
     { "x1":       2.45, "y1":       3.72, "x2":       2.45, "y2":      5.391, "width":      0.508, "layer": "B.Cu" },
@@ -116,15 +116,13 @@ UDB_CLONE_TRACKS = [
     { "x1":       2.45, "y1":      5.391, "x2":    4.27065, "y2":      5.391, "width":      0.508, "layer": "B.Cu" },
     { "x1":      3.048, "y1":      6.456, "x2":      2.156, "y2":      6.456, "width":      0.254, "layer": "B.Cu" },
     { "x1":    4.27065, "y1":      5.391, "x2":      5.325, "y2":    4.33665, "width":      0.508, "layer": "B.Cu" },
-    { "x1":      5.134, "y1":      9.005, "x2":     5.7715, "y2":     8.3675, "width":      0.508, "layer": "B.Cu" },
-    { "x1":      5.325, "y1":    2.51202, "x2":    5.87802, "y2":      1.959, "width":      0.508, "layer": "B.Cu" },
-    { "x1":      5.325, "y1":    4.33665, "x2":      5.325, "y2":    2.51202, "width":      0.508, "layer": "B.Cu" },
-    { "x1":     5.7715, "y1":     8.3675, "x2":     7.5825, "y2":     8.3675, "width":      0.508, "layer": "B.Cu" },
-    { "x1":    5.87802, "y1":      1.959, "x2":      7.112, "y2":      1.959, "width":      0.508, "layer": "B.Cu" },
-    { "x1":     7.5825, "y1":     8.3675, "x2":        8.0, "y2":       7.95, "width":      0.508, "layer": "B.Cu" },
-    { "x1":        8.0, "y1":      5.647, "x2":      7.112, "y2":      4.759, "width":      0.508, "layer": "B.Cu" },
-    { "x1":        8.0, "y1":      7.042, "x2":        8.0, "y2":      5.647, "width":      0.508, "layer": "B.Cu" },
-    { "x1":        8.0, "y1":       7.95, "x2":        8.0, "y2":      7.042, "width":      0.508, "layer": "B.Cu" },
+    { "x1":      5.325, "y1":    3.81202, "x2":      5.325, "y2":    4.33665, "width":      0.508, "layer": "B.Cu" },
+    { "x1":      5.325, "y1":    3.81202, "x2":    5.87802, "y2":      3.259, "width":      0.508, "layer": "B.Cu" },
+    { "x1":    5.87802, "y1":      3.259, "x2":      7.112, "y2":      3.259, "width":      0.508, "layer": "B.Cu" },
+    { "x1":     7.5825, "y1":     9.6675, "x2":        8.0, "y2":       9.25, "width":      0.508, "layer": "B.Cu" },
+    { "x1":        8.0, "y1":      6.947, "x2":      7.112, "y2":      6.059, "width":      0.508, "layer": "B.Cu" },
+    { "x1":        8.0, "y1":      8.342, "x2":        8.0, "y2":      6.947, "width":      0.508, "layer": "B.Cu" },
+    { "x1":        8.0, "y1":       9.25, "x2":        8.0, "y2":      8.342, "width":      0.508, "layer": "B.Cu" },
 ]
 UDB_CLONE_VIAS = [
     { "x":      -2.45, "y":      5.391, "width":       0.6, "hole":     0.3 },
@@ -226,8 +224,8 @@ def usb_udb_clone() -> skidl.Interface:
 
     # pins 6-10 can be left floating or grounded but we use them for optional
     # straight-through routing
-    usb_io_dm += esd_protection[6,9]
-    usb_io_dp += esd_protection[7,10]
+    usb_io_dm += esd_protection[6, 9]
+    usb_io_dp += esd_protection[7, 10]
 
     R = skidl.Part(
         "Device",
