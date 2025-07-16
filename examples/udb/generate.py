@@ -196,6 +196,25 @@ def remove_silkscreen_outlines_from_connectors(board: pcbnew.BOARD) -> None:
                 f.RemoveNative(d)
 
 
+def add_3d_models(board: pcbnew.BOARD) -> None:
+    # just for 3d preview, not really required
+    usb_3dmodel = pcbnew.FP_3DMODEL()
+    usb_3dmodel.m_Filename = "${KIPRJMOD}/../3dmodels/HRO-TYPE-C-31-M-12.step"
+    usb_3dmodel.m_Rotation = pcbnew.VECTOR3D(-90, 0, 0)
+    usb_3dmodel.m_Offset = pcbnew.VECTOR3D(-4.5, -3.7, 0)
+    usb_3dmodel.m_Show = True
+    usb = get_footprint(board, "J1")
+    usb.Add3DModel(usb_3dmodel)
+
+    jst_3dmodel = pcbnew.FP_3DMODEL()
+    jst_3dmodel.m_Filename = "${KIPRJMOD}/../3dmodels/SM04B-SRSS-TB.step"
+    jst_3dmodel.m_Rotation = pcbnew.VECTOR3D(-90, 0, 0)
+    jst_3dmodel.m_Offset = pcbnew.VECTOR3D(0, 1.4, -0.3)
+    jst_3dmodel.m_Show = True
+    jst = get_footprint(board, "J2")
+    jst.Add3DModel(jst_3dmodel)
+
+
 def finish_board(pcb_path):
     board = pcbnew.LoadBoard(pcb_path)
     build_edge(board, 18, 16.5)
@@ -208,6 +227,8 @@ def finish_board(pcb_path):
 
     hide_labels(board)
     remove_silkscreen_outlines_from_connectors(board)
+
+    add_3d_models(board)
 
     pcbnew.Refresh()
     pcbnew.SaveBoard(pcb_path, board)
