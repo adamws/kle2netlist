@@ -190,6 +190,7 @@ def apply_template(
     *,
     offset: Union[Tuple[float, float], Tuple[str, str]] = (0, 0),
     angle: float = 0,
+    add_fanout_tracks: bool = True,
 ) -> None:
     board = pcbnew.LoadBoard(board_path)
 
@@ -203,15 +204,16 @@ def apply_template(
 
     # works only for controller circuits which have matrix_pins defined
     # but could be generalized.
-    fanout_tracks = template.fanout_tracks(template_rev)
-    for item, tracks in fanout_tracks.items():
-        f = get_footprint(board, item)
-        for pin_name, pin_number in template.matrix_pins():
-            pad = f.FindPadByNumber(f"{pin_number}")
-            if pad.GetNetname():
-                if tracks_for_pin := tracks.get(pin_name, None):
-                    fanout_tracks = [Track.fromdict_mm(d) for d in tracks_for_pin]
-                    add_tracks(board, fanout_tracks, offset=offset, angle=angle)
+    if add_fanout_tracks:
+        fanout_tracks = template.fanout_tracks(template_rev)
+        for item, tracks in fanout_tracks.items():
+            f = get_footprint(board, item)
+            for pin_name, pin_number in template.matrix_pins():
+                pad = f.FindPadByNumber(f"{pin_number}")
+                if pad.GetNetname():
+                    if tracks_for_pin := tracks.get(pin_name, None):
+                        fanout_tracks = [Track.fromdict_mm(d) for d in tracks_for_pin]
+                        add_tracks(board, fanout_tracks, offset=offset, angle=angle)
 
     vias = [Via.fromdict_mm(d) for d in template.vias(template_rev)]
     add_vias(board, vias, offset=offset, angle=angle)
