@@ -305,7 +305,7 @@ def new_pcb(output_dir) -> bool:
 
     usb = "usb"
     usb_revision = "udb_clone"
-    usb_position = "9,3.67"
+    usb_position = "9,3.67,0"
     usb_extra_circuit = f"{usb};{usb_revision};{usb_position}"
 
     set_skidl_search_path()
@@ -335,11 +335,14 @@ def new_pcb(output_dir) -> bool:
     for c in [usb_extra_circuit]:
         template, revision, position = get_circuit_revision(c)
         offset = (position[0], position[1])
+        angle = float(position[2])
         apply_template(
             pcb_file,
             template,
             revision,
             offset=offset,
+            angle=angle,
+            add_fanout_tracks=False,
         )
 
     finish_board(pcb_file)

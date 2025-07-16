@@ -26,12 +26,12 @@ class RefMapper:
         return [{**p, "ref": self.mapping[p["ref"]]} for p in positions]
 
 
-def get_circuit_revision(name: str) -> Tuple[ModuleType, str, Tuple[str, str]]:
-    offset = ("0", "0")
+def get_circuit_revision(name: str) -> Tuple[ModuleType, str, Tuple[str, str, str]]:
+    offset = ("0", "0", "0")
     format_err = (
         "Circuit description must have use following format: "
-        "'name,revision[,offset]' where offset is comma delimited "
-        "position value: 'x,y'"
+        "'name;revision[;position]' where position is comma delimited "
+        "position value: 'x,y,rot'"
     )
     if ";" in name:
         parts = name.split(";")
@@ -41,9 +41,9 @@ def get_circuit_revision(name: str) -> Tuple[ModuleType, str, Tuple[str, str]]:
         if len(parts) == 3:
             offset_str = parts[2]
             parts = offset_str.split(",")
-            if len(parts) != 2:
+            if len(parts) != 3:
                 raise RuntimeError(format_err)
-            offset = (parts[0], parts[1])
+            offset = (parts[0], parts[1], parts[2])
         return get_circuit(circuit_name), revision, offset
     else:
         template = get_circuit(name)

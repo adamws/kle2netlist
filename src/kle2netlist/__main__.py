@@ -130,13 +130,21 @@ def main(
             generate_pcb(circuit, pcb_output)
 
             if controller_circuit:
-                template, revision, offset = get_circuit_revision(controller_circuit)
-                apply_template(pcb_output, template, revision, offset=offset)
+                template, revision, position = get_circuit_revision(controller_circuit)
+                offset = (position[0], position[1])
+                angle = float(position[2])
+                apply_template(
+                    pcb_output, template, revision, offset=offset, angle=angle
+                )
 
             if extra_circuits:
                 for extra_circuit in extra_circuits:
-                    template, revision, offset = get_circuit_revision(extra_circuit)
-                    apply_template(pcb_output, template, revision, offset=offset)
+                    template, revision, position = get_circuit_revision(extra_circuit)
+                    offset = (position[0], position[1])
+                    angle = float(position[2])
+                    apply_template(
+                        pcb_output, template, revision, offset=offset, angle=angle
+                    )
 
     except RuntimeError as e:
         console.print(f"[red]error:[/] [bold]{e}[/]")
