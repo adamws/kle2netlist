@@ -4,8 +4,8 @@ from pathlib import Path
 from textwrap import dedent
 from typing import List, Tuple
 
-import skidl
 import pcbnew
+import skidl
 
 from kle2netlist.netlist import connect_interfaces, generate_netlist, generate_pcb
 from kle2netlist.pcb_kicad import apply_template
@@ -122,8 +122,8 @@ def place_jst_connector(board: pcbnew.BOARD) -> None:
     jst = get_footprint(board, "J2")
     position = jst.GetPosition()
     jst.Flip(position, False)
-    jst.SetOrientationDegrees(0)
-    jst.SetPosition(pcbnew.VECTOR2I_MM(9, 14))
+    jst.SetOrientationDegrees(180)
+    jst.SetPosition(pcbnew.VECTOR2I_MM(9, 13.4))
 
 
 def add_ground_fill(
@@ -224,11 +224,11 @@ def udb_not_templated_extras() -> skidl.Interface:
     jst = skidl.Part(
         "Connector_Generic",
         "Conn_01x04",
-        footprint="Connector_JST:JST_SH_BM04B-SRSS-TB_1x04-1MP_P1.00mm_Vertical",
+        footprint="Connector_JST:JST_SH_SM04B-SRSS-TB_1x04-1MP_P1.00mm_Horizontal",
     )
 
-    vcc += jst[4]
-    gnd += jst[1]
+    vcc += jst[1]
+    gnd += jst[4]
 
     hole_pth = skidl.Part(
         "Mechanical",
@@ -251,8 +251,8 @@ def udb_not_templated_extras() -> skidl.Interface:
     # updated later when placing
 
     return skidl.Interface(
-        usb_io_dm=jst[3],
-        usb_io_dp=jst[2],
+        usb_io_dm=jst[2],
+        usb_io_dp=jst[3],
     )
 
 
@@ -280,7 +280,7 @@ def check_drc_report_clear(filepath: str) -> bool:
     }
 
     try:
-        with open(filepath, "r", encoding="utf-8") as f:
+        with open(filepath, encoding="utf-8") as f:
             for line in f:
                 for check in required_checks:
                     if f"Found 0 {check}" in line:
@@ -305,7 +305,7 @@ def new_pcb(output_dir) -> bool:
 
     usb = "usb"
     usb_revision = "udb_clone"
-    usb_position = "9,3.67,0"
+    usb_position = "9,2.37,0"
     usb_extra_circuit = f"{usb};{usb_revision};{usb_position}"
 
     set_skidl_search_path()
