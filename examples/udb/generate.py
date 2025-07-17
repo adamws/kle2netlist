@@ -347,10 +347,6 @@ def new_pcb(output_dir) -> bool:
     generate_netlist(circuit, netlist_file)
 
     libraries = ["/usr/share/kicad/footprints"]
-    footprints = Path(f"{Path.home()}/.local/share/kicad/9.0/3rdparty/footprints")
-    for path in footprints.iterdir():
-        if path.is_dir():
-            libraries.append(str(path))
     generate_pcb(circuit, pcb_file, extra_libraries=libraries)
 
     for c in [usb_extra_circuit]:

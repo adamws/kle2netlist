@@ -2,6 +2,11 @@ name: build
 
 on: [push, pull_request]
 
+env:
+  IMAGE_NAME: kicad-kle2netlist
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
 jobs:
   tests:
     runs-on: ubuntu-latest
@@ -69,3 +74,37 @@ jobs:
         skip_existing: true
         user: __token__
         password: ${{ secrets.PYPI_API_TOKEN }}
+
+  run-examples:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    - uses: extractions/setup-just@v3
+    - name: Install Vercel CLI
+      run: npm install --global vercel@latest
+    - name: Build image
+      run: |
+        docker build . --file docker/Dockerfile --tag $IMAGE_NAME:dev \
+          --label "runnumber=${GITHUB_RUN_ID}"
+    - name: Fix ownership for Docker container user
+      run: sudo chown -R 1000:1000 .
+    - name: Run
+      run: |
+        cd examples/udb
+        just run-in-docker $IMAGE_NAME:dev
+    - name: Reset ownership back to GitHub runner (UID 1001)
+      run: sudo chown -R 1001:1001 .
+    - name: Deploy Project Artifacts to Vercel
+      run: |
+        vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+        vercel build --token=${{ secrets.VERCEL_TOKEN }}
+        vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} > url.txt
+      working-directory: examples/udb/output
+    - name: Add summary
+      shell: bash
+      run: |
+        echo '### Deployed' >> $GITHUB_STEP_SUMMARY
+        cat examples/udb/output/url.txt >> $GITHUB_STEP_SUMMARY
